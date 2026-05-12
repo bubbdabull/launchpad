@@ -1,0 +1,147 @@
+/**
+ * Creator Market design system — CSS variables (dark-first, neon accents).
+ * Consumed by Tailwind extensions and raw components.
+ */
+
+:root {
+  --cm-bg-deep: #000000;
+  --cm-bg: #000000;
+  --cm-panel: rgba(12, 12, 14, 0.92);
+  --cm-panel-solid: #0c0c0e;
+  --cm-glass-border: rgba(255, 255, 255, 0.1);
+  --cm-glass-highlight: rgba(255, 255, 255, 0.05);
+  --cm-neon: #22f59e;
+  --cm-neon-soft: rgba(34, 245, 158, 0.45);
+  --cm-mint: #4ade80;
+  --cm-violet: #a78bfa;
+  --cm-danger: #fb7185;
+  --cm-warning: #fbbf24;
+  --cm-degen-pink: #ff4d9d;
+  --cm-degen-gold: #fbbf24;
+  --cm-ink: #000000;
+  --cm-muted: #8b8b96;
+  --cm-grid: rgba(255, 255, 255, 0.035);
+  --cm-gradient-hero: radial-gradient(ellipse 90% 70% at 50% -20%, rgba(34, 245, 158, 0.12), transparent 55%),
+    radial-gradient(ellipse 60% 50% at 100% 0%, rgba(34, 245, 158, 0.06), transparent 50%);
+  --cm-shadow-glow: 0 0 60px rgba(34, 245, 158, 0.1);
+  --cm-elev-1: 0 8px 32px rgba(0, 0, 0, 0.45);
+  --cm-elev-2: 0 24px 80px rgba(0, 0, 0, 0.55);
+  --cm-radius-sm: 0.5rem;
+  --cm-radius-md: 0.75rem;
+  --cm-radius-lg: 1rem;
+  --cm-radius-xl: 1.25rem;
+  --cm-radius-2xl: 1.75rem;
+  --cm-space-1: 0.25rem;
+  --cm-space-2: 0.5rem;
+  --cm-space-3: 0.75rem;
+  --cm-space-4: 1rem;
+  --cm-space-6: 1.5rem;
+  --cm-space-8: 2rem;
+  --cm-space-12: 3rem;
+  --cm-motion-fast: 160ms;
+  --cm-motion-base: 240ms;
+  --cm-motion-slow: 420ms;
+  --cm-rarity-common: #94a3b8;
+  --cm-rarity-rare: #38bdf8;
+  --cm-rarity-epic: #a78bfa;
+  --cm-rarity-mythic: #fb7185;
+  --cm-rarity-genesis: #22f59e;
+  --cm-type-xs: 0.6875rem;
+  --cm-type-sm: 0.8125rem;
+  --cm-type-base: 0.9375rem;
+  --cm-type-lg: 1.125rem;
+  --cm-type-xl: 1.25rem;
+  --cm-type-2xl: 1.5rem;
+  --cm-type-3xl: 2rem;
+}
+
+.cm-glass {
+  background: var(--cm-panel);
+  border: 1px solid var(--cm-glass-border);
+  box-shadow: inset 0 1px 0 var(--cm-glass-highlight), 0 24px 80px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.cm-neon-text {
+  color: var(--cm-neon);
+  text-shadow: 0 0 24px var(--cm-neon-soft);
+}
+
+.cm-grid-bg {
+  background-image: linear-gradient(var(--cm-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--cm-grid) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.cm-glow-ring-genesis {
+  box-shadow: 0 0 0 1px rgba(34, 245, 158, 0.25), 0 0 40px rgba(34, 245, 158, 0.12);
+}
+
+.cm-glow-ring-mythic {
+  box-shadow: 0 0 0 1px rgba(251, 113, 133, 0.35), 0 0 48px rgba(251, 113, 133, 0.12);
+}
+
+.cm-animated-gradient {
+  background: linear-gradient(
+    120deg,
+    rgba(34, 245, 158, 0.15),
+    rgba(255, 77, 157, 0.12),
+    rgba(167, 139, 250, 0.12),
+    rgba(34, 245, 158, 0.15)
+  );
+  background-size: 240% 240%;
+  animation: cm-gradient-x 10s ease infinite;
+}
+
+@keyframes cm-pulse-vault {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(34, 245, 158, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 28px 4px rgba(34, 245, 158, 0.16);
+  }
+}
+
+.cm-animate-vault-pulse {
+  animation: cm-pulse-vault 2.8s ease-in-out infinite;
+}
+
+@keyframes cm-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.cm-shimmer {
+  background: linear-gradient(
+    110deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.06) 45%,
+    rgba(255, 255, 255, 0) 90%
+  );
+  background-size: 200% 100%;
+  animation: cm-shimmer 2.5s linear infinite;
+}
+
+@keyframes cm-gradient-x {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cm-animate-vault-pulse,
+  .cm-shimmer,
+  .cm-animated-gradient {
+    animation: none !important;
+  }
+}

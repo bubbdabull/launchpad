@@ -1,0 +1,26 @@
+[package]
+name = "launch-controller"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "LaunchController: Genesis Pass entitlement, linear vesting claims, indexer events"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "launch_controller"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+# Declared for Rust `check-cfg` (1.80+): Anchor macros reference these `cfg(feature = "...")` values.
+"anchor-debug" = []
+"custom-heap" = []
+"custom-panic" = []
+
+[dependencies]
+anchor-lang = { version = "0.31.1", features = ["init-if-needed"] }
+anchor-spl = { version = "0.31.1", features = ["associated_token", "token"] }

@@ -1,0 +1,50 @@
+{
+  "version": "5",
+  "remote": {
+    "https://edge.netlify.com/": "fd941d61d88673d5f28aab283fb86fcc50f08a3bc80ee5470498fcfa88c65cfb",
+    "https://edge.netlify.com/bootstrap/config.ts": "6a2ce0e544e15e8f8883a5c18da5948e37fd0f2619f68cb31f3af53c51817025",
+    "https://edge.netlify.com/bootstrap/context.ts": "e97240232121e2f369f6546ce961490f34d961ea1ea54be3ff09633e3f08373f",
+    "https://edge.netlify.com/bootstrap/cookie.ts": "8b0baae708989ca183c6f3b4ab3d029e6abcbc2e43f93edeb0ff447b3bbc3a05",
+    "https://edge.netlify.com/bootstrap/edge_function.ts": "b8253e86aa83c67341f5cfedeba5049d77fbf84dcab7eceff7566b7728ae9b39",
+    "https://edge.netlify.com/bootstrap/globals/types.ts": "eaa6148ded3121d8dee62dd91c86e7fe76601df0f3ca8d7962243a30f4c8935f"
+  },
+  "workspace": {
+    "packageJson": {
+      "dependencies": [
+        "npm:@metaplex-foundation/mpl-core@^1.10.0",
+        "npm:@metaplex-foundation/umi-bundle-defaults@^1.5.1",
+        "npm:@metaplex-foundation/umi-signer-wallet-adapters@^1.5.1",
+        "npm:@metaplex-foundation/umi-web3js-adapters@^1.5.1",
+        "npm:@metaplex-foundation/umi@^1.5.1",
+        "npm:@meteora-ag/cp-amm-sdk@^1.4.3",
+        "npm:@meteora-ag/dynamic-bonding-curve-sdk@^1.5.7",
+        "npm:@solana/spl-token@~0.4.14",
+        "npm:@solana/wallet-adapter-base@~0.9.27",
+        "npm:@solana/wallet-adapter-react-ui@~0.9.39",
+        "npm:@solana/wallet-adapter-react@~0.15.39",
+        "npm:@solana/wallet-adapter-wallets@~0.19.38",
+        "npm:@solana/web3.js@^1.98.4",
+        "npm:@supabase/ssr@~0.10.2",
+        "npm:@supabase/supabase-js@^2.105.3",
+        "npm:@tanstack/react-query@^5.76.1",
+        "npm:@types/node@20",
+        "npm:@types/react-dom@19",
+        "npm:@types/react@19",
+        "npm:@types/web@^0.0.349",
+        "npm:autoprefixer@^10.4.21",
+        "npm:bn.js@^5.2.3",
+        "npm:bs58@6",
+        "npm:eslint-config-next@^16.2.4",
+        "npm:eslint@9",
+        "npm:next@^16.2.4",
+        "npm:openai@^6.37.0",
+        "npm:postcss@^8.5.3",
+        "npm:react-dom@19",
+        "npm:react@19",
+        "npm:tailwindcss@^3.4.17",
+        "npm:tweetnacl@^1.0.3",
+        "npm:typescript@5"
+      ]
+    }
+  }
+}

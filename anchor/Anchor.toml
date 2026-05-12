@@ -1,0 +1,27 @@
+[toolchain]
+# Host Rust for refreshing `Cargo.lock`; SBF build uses Solana platform-tools from your `solana` install.
+channel = "1.88.0"
+# Match `anchor-lang` in programs/launch-controller/Cargo.toml (avm / Anchor CLI will use this).
+anchor_version = "0.31.1"
+
+[features]
+resolution = true
+# IDL safety lint requires `/// CHECK:` on every `UncheckedAccount` (many collection_mint seeds).
+# Re-enable when those docs are filled in; does not affect on-chain bytecode checks.
+skip-lint = true
+
+[programs.localnet]
+launch_controller = "EfjEi5nQVmupvYHLLhexmcrM39WhdFq8Y7r4waSbyxEf"
+
+[programs.devnet]
+launch_controller = "EfjEi5nQVmupvYHLLhexmcrM39WhdFq8Y7r4waSbyxEf"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "Devnet"
+wallet = "~/.config/solana/devnet-funded.json"
+
+[scripts]
+test = "cargo test -p launch-controller"
