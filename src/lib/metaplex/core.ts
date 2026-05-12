@@ -20,7 +20,6 @@ import {
 } from "@metaplex-foundation/mpl-core";
 import {
   generateSigner,
-  percentAmount,
   publicKey,
   signerIdentity,
   type Signer,
@@ -144,7 +143,6 @@ export async function buildMintCoreAssetInstructions(
     uri: input.uri,
     owner: publicKey(input.owner.toBase58()),
     plugins,
-    sellerFeeBasisPoints: percentAmount(0),
   });
 
   const umiIxs = builder.getInstructions();
