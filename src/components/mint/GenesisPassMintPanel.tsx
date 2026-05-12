@@ -236,13 +236,13 @@ export function GenesisPassMintPanel({ collection: c, anchorMintActive = false }
             Vault and Core collection are linked, but the on-chain controller must reach{" "}
             <span className="text-white/90">MINT_ACTIVE</span> before hybrid mints record participation. The creator
             finishes this from the{" "}
-            <Link href={`/launch/${c.slug}`} className="underline underline-offset-2 hover:text-white">
+            <Link href={`/launch/${c.slug}#deploy-on-chain`} className="underline underline-offset-2 hover:text-white">
               launch page
             </Link>{" "}
             deploy panel (Anchor step).
           </p>
           <p className="mt-2 text-amber-100/85">
-            <Link href={`/launch/${c.slug}`} className="underline underline-offset-2 hover:text-white">
+            <Link href={`/launch/${c.slug}#deploy-on-chain`} className="underline underline-offset-2 hover:text-white">
               Open launch deploy
             </Link>
           </p>

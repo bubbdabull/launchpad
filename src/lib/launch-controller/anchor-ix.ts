@@ -101,10 +101,11 @@ export async function buildInitializeLaunchIx(args: {
     throw new Error("sliceBCreatorOfReserveBps must be 0–10000.");
   }
 
+  // `launch_state` is a PDA (off-curve); SPL ATA helpers require allowOwnerOffCurve.
   const vaultToken = getAssociatedTokenAddressSync(
     args.projectMint,
     launchState,
-    false,
+    true,
     TOKEN_PROGRAM_ID,
     ASSOCIATED_TOKEN_PROGRAM_ID,
   );

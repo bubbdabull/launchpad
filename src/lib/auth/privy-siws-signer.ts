@@ -6,6 +6,8 @@ import {
   useWallets as usePrivySolanaWallets,
 } from "@privy-io/react-auth/solana";
 
+import { pickPrimaryPrivySolanaWallet } from "@/lib/auth/privy-primary-solana-wallet";
+
 export const PRIVY_AUTH_ENABLED =
   process.env.NEXT_PUBLIC_PRIVY_ENABLED === "true" &&
   Boolean(process.env.NEXT_PUBLIC_PRIVY_APP_ID);
@@ -46,7 +48,7 @@ function usePrivySiwsSignerInner(): PrivySiwsSigner | null {
 
   if (!privyReady || !walletsReady) return null;
   if (!authenticated) return null;
-  const wallet = wallets[0];
+  const wallet = pickPrimaryPrivySolanaWallet(wallets);
   if (!wallet) return null;
 
   return {

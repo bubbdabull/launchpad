@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -14,6 +15,8 @@ import { StandardWalletAdapter } from "@solana/wallet-standard-wallet-adapter-ba
 import { useWallet } from "@solana/wallet-adapter-react";
 import { getWallets } from "@wallet-standard/app";
 import type { Wallet } from "@wallet-standard/base";
+
+import { pickPrimaryPrivySolanaWallet } from "@/lib/auth/privy-primary-solana-wallet";
 
 /**
  * Bridges Privy authentication into the existing wallet-adapter flow so
@@ -109,7 +112,10 @@ export function PrivyWalletBridge() {
     disconnect,
   } = useWallet();
 
-  const primaryEntry = privyWallets[0] ?? null;
+  const primaryEntry = useMemo(
+    () => pickPrimaryPrivySolanaWallet(privyWallets),
+    [privyWallets],
+  );
   const targetAddress = primaryEntry?.address ?? null;
   const targetStandardWallet = primaryEntry?.standardWallet ?? null;
   const managedStandardRef = useRef<Wallet | null>(null);
