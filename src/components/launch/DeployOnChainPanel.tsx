@@ -271,7 +271,18 @@ export function DeployOnChainPanel({ collection: c }: Props) {
 
     // Note: We keep the lifecycle progression deterministic for mint:
     // DRAFT -> VAULT_OPEN -> MINT_ACTIVE
-    if (lifecycle == null || lifecycle === LC_DRAFT) {
+    const ixSetVault = buildSetAlphaVaultIx({
+      authority: creator,
+      collectionMint: corePk,
+      alphaVault: alphaVaultPk,
+    });
+    const ixAdvance = buildAdvanceLifecycleIx({
+      authority: creator,
+      collectionMint: corePk,
+      next: LC_MINT_ACTIVE,
+    });
+
+    if (lifecycle == null) {
       const sliceBReserveBps = Math.max(0, Math.min(1000, Math.round((c.sliceBPct ?? 0) * 100)));
       const sliceBCreatorOfReserveBps = Math.max(
         0,
@@ -291,17 +302,10 @@ export function DeployOnChainPanel({ collection: c }: Props) {
         sliceBReserveBps,
         sliceBCreatorOfReserveBps,
       });
-      const ixSetVault = buildSetAlphaVaultIx({
-        authority: creator,
-        collectionMint: corePk,
-        alphaVault: alphaVaultPk,
-      });
-      const ixAdvance = buildAdvanceLifecycleIx({
-        authority: creator,
-        collectionMint: corePk,
-        next: LC_MINT_ACTIVE,
-      });
       tx.add(ixInit, ixSetVault, ixAdvance);
+    } else if (lifecycle === LC_DRAFT) {
+      // Account exists but lifecycle never advanced (e.g. partial / external init only). Skip init — it would fail as "already in use".
+      tx.add(ixSetVault, ixAdvance);
     } else if (lifecycle === LC_VAULT_OPEN) {
       const ixAdvance = buildAdvanceLifecycleIx({
         authority: creator,
@@ -509,7 +513,10 @@ export function DeployOnChainPanel({ collection: c }: Props) {
   }
 
   return (
-    <section className="rounded-2xl border border-accent/30 bg-gradient-to-b from-accent/[0.05] to-transparent p-6">
+    <section
+      id="deploy-on-chain"
+      className="scroll-mt-24 rounded-2xl border border-accent/30 bg-gradient-to-b from-accent/[0.05] to-transparent p-6"
+    >
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-[10px] uppercase tracking-wider text-accent">Creator setup</p>
