@@ -38,8 +38,32 @@ type Step = {
   message?: string;
 };
 
+function stringifyUnknownErr(err: unknown, maxLen = 2500): string {
+  if (err instanceof Error && err.message.trim()) return err.message;
+  if (typeof err === "string" && err.trim()) return err;
+  if (err && typeof err === "object") {
+    const o = err as Record<string, unknown>;
+    for (const k of ["message", "msg", "reason", "error"] as const) {
+      const v = o[k];
+      if (typeof v === "string" && v.trim()) return v;
+      if (v && typeof v === "object" && "message" in (v as object)) {
+        const im = (v as { message?: unknown }).message;
+        if (typeof im === "string" && im.trim()) return im;
+      }
+    }
+    try {
+      const j = JSON.stringify(err);
+      if (j && j !== "{}") return j.length > maxLen ? `${j.slice(0, maxLen)}…` : j;
+    } catch {
+      /* ignore */
+    }
+  }
+  const s = String(err);
+  return s === "[object Object]" ? "Unknown error (wallet or RPC returned a non-Error object — check the browser console)." : s;
+}
+
 async function formatDeploySendError(err: unknown, connection: Connection): Promise<string> {
-  let m = err instanceof Error ? err.message : String(err);
+  let m = stringifyUnknownErr(err);
   if (err instanceof SendTransactionError) {
     try {
       const logs = await err.getLogs(connection);
@@ -47,6 +71,13 @@ async function formatDeploySendError(err: unknown, connection: Connection): Prom
     } catch {
       // RPC may not return logs; keep the original message.
     }
+    const le = (err as SendTransactionError & { logs?: string[] }).logs;
+    if (Array.isArray(le) && le.length && !m.includes("Simulation logs:")) {
+      m += `\n\nSimulation logs:\n${le.join("\n")}`;
+    }
+  }
+  if (!m.trim()) {
+    m = "Transaction failed with no message from the wallet or RPC. Try Phantom/Solflare, confirm you are on devnet, and check the browser console (F12 → Console) on retry.";
   }
   const lower = m.toLowerCase();
   if (
@@ -79,8 +110,6 @@ export function DeployOnChainPanel({ collection: c }: Props) {
   const [seedSol, setSeedSol] = useState("0.1");
   const [seedTokens, setSeedTokens] = useState("1000");
   const [newMintDecimals, setNewMintDecimals] = useState("6");
-  const [anchorBusy, setAnchorBusy] = useState(false);
-
   const [steps, setSteps] = useState<Step[]>([
     { label: "Project SPL mint · pool · Alpha Vault", status: alphaDone ? "done" : "idle" },
     { label: "Core collection (Genesis Pass)", status: needsCollection ? "idle" : "done" },
@@ -96,16 +125,40 @@ export function DeployOnChainPanel({ collection: c }: Props) {
    */
   const lastDeployPersisted = useRef<Partial<Pick<Collection, "coreCollection" | "alphaVault" | "tokenMint">>>({});
 
+  // Sync steps 0–1 from launch record only. Do **not** reset step 3 here: `anchorBusy` toggles around
+  // Anchor txs and would clear "running" / `catch` error state before `findIndex` runs, hiding messages.
   useEffect(() => {
-    setSteps([
-      { label: "Project SPL mint · pool · Alpha Vault", status: alphaDone ? "done" : "idle" },
-      { label: "Core collection (Genesis Pass)", status: needsCollection ? "idle" : "done" },
-      {
+    setSteps((prev) => {
+      const anchor = prev[2] ?? {
         label: "Anchor · project SPL + MINT_ACTIVE",
-        status: anchorMintActive ? "done" : anchorBusy ? "running" : "idle",
-      },
-    ]);
-  }, [alphaDone, needsCollection, anchorMintActive, anchorBusy]);
+        status: "idle" as StepStatus,
+      };
+      return [
+        {
+          label: "Project SPL mint · pool · Alpha Vault",
+          status: alphaDone ? "done" : "idle",
+          signature: alphaDone ? prev[0]?.signature : undefined,
+          message: alphaDone ? undefined : prev[0]?.message,
+        },
+        {
+          label: "Core collection (Genesis Pass)",
+          status: needsCollection ? "idle" : "done",
+          signature: !needsCollection ? prev[1]?.signature : undefined,
+          message: needsCollection ? prev[1]?.message : undefined,
+        },
+        anchor,
+      ];
+    });
+  }, [alphaDone, needsCollection]);
+
+  useEffect(() => {
+    if (!anchorMintActive) return;
+    setSteps((prev) =>
+      prev.map((s, i) =>
+        i === 2 ? { ...s, status: "done" as const, message: undefined } : s,
+      ),
+    );
+  }, [anchorMintActive]);
 
   const syncAnchorLifecycleFromPersisted = useCallback(async () => {
     const persisted = lastDeployPersisted.current;
@@ -326,18 +379,13 @@ export function DeployOnChainPanel({ collection: c }: Props) {
     tx.recentBlockhash = blockhash;
     tx.lastValidBlockHeight = lastValidBlockHeight;
 
-    setAnchorBusy(true);
-    try {
-      const sig = await sendLegacyTransactionPreferRpc(wallet, connection, tx);
-      await connection.confirmTransaction(sig, "confirmed");
-      patchStep(2, { status: "done", signature: sig });
-      router.refresh();
-      // Refresh lifecycle cache.
-      const decoded = await fetchDecodedLaunchState(connection, corePk).catch(() => null);
-      setAnchorLifecycle(decoded?.lifecycle ?? null);
-    } finally {
-      setAnchorBusy(false);
-    }
+    const sig = await sendLegacyTransactionPreferRpc(wallet, connection, tx);
+    await connection.confirmTransaction(sig, "confirmed");
+    patchStep(2, { status: "done", signature: sig });
+    router.refresh();
+    // Refresh lifecycle cache.
+    const decoded = await fetchDecodedLaunchState(connection, corePk).catch(() => null);
+    setAnchorLifecycle(decoded?.lifecycle ?? null);
   }
 
   async function createPoolAndVaultAutomatic() {
@@ -469,6 +517,7 @@ export function DeployOnChainPanel({ collection: c }: Props) {
     }
 
     setBusy(true);
+    let attemptedAnchor = false;
     try {
       if (needsCollection) {
         patchStep(1, { status: "running", message: undefined });
@@ -494,7 +543,8 @@ export function DeployOnChainPanel({ collection: c }: Props) {
 
       // On-chain monetization / lifecycle wiring must happen once core+alpha exist.
       if (!anchorMintActive) {
-        patchStep(2, { status: "running" });
+        attemptedAnchor = true;
+        patchStep(2, { status: "running", message: undefined });
         await wireAnchorLifecycle();
       }
 
@@ -503,7 +553,8 @@ export function DeployOnChainPanel({ collection: c }: Props) {
       const message = await formatDeploySendError(err, connection);
       setTopError(message);
       setSteps((prev) => {
-        const idx = prev.findIndex((s) => s.status === "running");
+        let idx = prev.findIndex((s) => s.status === "running");
+        if (idx === -1 && attemptedAnchor) idx = 2;
         if (idx === -1) return prev;
         return prev.map((s, i) => (i === idx ? { ...s, status: "error", message } : s));
       });
