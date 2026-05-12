@@ -1,13 +1,14 @@
 /**
  * Alpha Vault hybrid mint (Pattern A): one user-signed transaction =
  * platform fee + Meteora Alpha Vault quote deposit + Metaplex Core Genesis
- * mint + memo. No swap leg in this path. Project SPL is not granted at mint;
- * see `genesis-pass-token-entitlement.ts` for metadata + policy notes.
+ * mint (+ optional Anchor participation ix). No swap leg in this path.
+ * Optional v0 address lookup tables shrink the message (see env in `.env.example`).
  */
 
 import AlphaVaultSdk, { WhitelistMode } from "@meteora-ag/alpha-vault";
 import BN from "bn.js";
 import {
+  type AddressLookupTableAccount,
   Connection,
   Keypair,
   PublicKey,
@@ -18,7 +19,6 @@ import {
 } from "@solana/web3.js";
 
 import { relaxedGenesisMintWithoutLifecycle } from "@/lib/launch/genesis-mint-config";
-import { genesisPassTokenEntitlementMetadataAttributes } from "@/lib/launch/genesis-pass-token-entitlement";
 import { getPlatformMintFeeLamports } from "@/lib/launch/platform-fees";
 import {
   buildMintCoreAssetInstructions,
@@ -31,17 +31,30 @@ import type { Collection } from "@/types/collection";
 import { generateSigner } from "@metaplex-foundation/umi";
 import { buildRecordGenesisParticipationIx, fetchDecodedLaunchState, LC_MINT_ACTIVE } from "@/lib/launch-controller";
 
-const MEMO_PROGRAM_ID = new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
+/**
+ * Optional comma/space-separated ALT addresses (`NEXT_PUBLIC_SOLANA_MINT_ADDRESS_LOOKUP_TABLES`).
+ * Populate tables with Meteora + Metaplex Core + SPL programs used by your vault path to shrink v0 messages.
+ */
+async function fetchMintLookupTables(connection: Connection): Promise<AddressLookupTableAccount[]> {
+  const raw = process.env.NEXT_PUBLIC_SOLANA_MINT_ADDRESS_LOOKUP_TABLES?.trim();
+  if (!raw) return [];
+  const parts = raw.split(/[\s,]+/).filter(Boolean);
+  const out: AddressLookupTableAccount[] = [];
+  for (const s of parts) {
+    try {
+      const pk = new PublicKey(s);
+      const res = await connection.getAddressLookupTable(pk);
+      if (res.value) out.push(res.value);
+    } catch {
+      /* skip invalid */
+    }
+  }
+  return out;
+}
 
-/** Keep Core `name` + Attributes compact — Meteora deposit + Core + Anchor + memo must fit Solana’s ~1232-byte message cap. */
-const ON_CHAIN_ASSET_NAME_MAX = 36;
-
-function compactOnChainAssetName(launchName: string, mintOrder: number): string {
-  const base = (launchName || "Genesis Pass").replace(/\s+/g, " ").trim();
-  const suffix = ` #${mintOrder}`;
-  const budget = Math.max(8, ON_CHAIN_ASSET_NAME_MAX - suffix.length);
-  const head = base.length <= budget ? base : `${base.slice(0, Math.max(1, budget - 1))}…`;
-  return `${head}${suffix}`;
+/** Ultra-compact on-chain name — full title lives in `/api/metadata/asset/...` JSON. */
+function compactOnChainAssetName(mintOrder: number): string {
+  return `G#${mintOrder}`;
 }
 
 export type AlphaVaultHybridMintInput = {
@@ -156,18 +169,11 @@ export async function buildAlphaVaultHybridMintTx(
   const mint = await buildMintCoreAssetInstructions(umi, {
     collection: coreCollection,
     owner: user,
-    name: compactOnChainAssetName(launch.name, mintOrder),
+    name: compactOnChainAssetName(mintOrder),
     uri: assetUri,
     assetSigner,
-    attributes: [
-      /** Canonical launch identity for indexers — matches Anchor `collection_mint` PDA seed. */
-      { key: "launchId", value: coreCollection.toString() },
-      { key: "launch", value: launch.slug },
-      { key: "mintOrder", value: String(mintOrder) },
-      { key: "alphaVault", value: vaultPk.toBase58() },
-      { key: "solPaidLamports", value: depositLamports.toString() },
-      ...genesisPassTokenEntitlementMetadataAttributes(),
-    ],
+    /** One Attributes entry — `/api/metadata/asset` resolves slug; JSON adds the rest. Saves v0 message bytes. */
+    attributes: [{ key: "launch", value: launch.slug }],
   });
   instructions.push(...mint.instructions);
 
@@ -184,25 +190,20 @@ export async function buildAlphaVaultHybridMintTx(
     );
   }
 
-  instructions.push({
-    programId: MEMO_PROGRAM_ID,
-    keys: [],
-    data: Buffer.from(`lp:${launch.slug}:#${mintOrder}`, "utf8"),
-  });
-
   const { blockhash } = await connection.getLatestBlockhash("confirmed");
+  const lookupTableAccounts = await fetchMintLookupTables(connection);
   const message = new TransactionMessage({
     payerKey: user,
     recentBlockhash: blockhash,
     instructions,
-  }).compileToV0Message();
+  }).compileToV0Message(lookupTableAccounts.length > 0 ? lookupTableAccounts : undefined);
 
   try {
     message.serialize();
   } catch (err) {
     const hint =
       err instanceof RangeError && String(err.message).includes("overruns Uint8Array")
-        ? " Solana’s single-transaction size limit was exceeded (Meteora deposit + Core mint + fees + memo). Try a shorter launch name, or contact support to split this bundle."
+        ? " Solana’s single-transaction size limit was exceeded. Add NEXT_PUBLIC_SOLANA_MINT_ADDRESS_LOOKUP_TABLES (Meteora + Core + SPL program accounts), shorten the launch slug, or contact support to split this bundle."
         : "";
     throw new Error(`Could not serialize mint transaction.${hint}`);
   }
