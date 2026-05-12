@@ -1,4 +1,11 @@
-/** Default program id from Anchor template — replace after deploy. */
+/**
+ * Default launch-controller program id (must match `declare_id!` in
+ * `anchor/programs/launch-controller/src/lib.rs` and the bytecode **actually**
+ * deployed at this address). If simulation logs show `DeclaredProgramIdMismatch`
+ * (4100), the on-chain program at this pubkey is wrong — run `anchor upgrade` from
+ * this repo, or set `NEXT_PUBLIC_LAUNCH_CONTROLLER_PROGRAM_ID` to a pubkey where you
+ * deployed a matching build.
+ */
 export const LAUNCH_CONTROLLER_PROGRAM_ID =
   "EfjEi5nQVmupvYHLLhexmcrM39WhdFq8Y7r4waSbyxEf" as const;
 

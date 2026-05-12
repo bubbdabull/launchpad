@@ -14,11 +14,9 @@
 import { PublicKey, type TransactionInstruction } from "@solana/web3.js";
 
 import {
+  create,
   createCollection,
-  createV2,
   ruleSet,
-  type CollectionV1,
-  type PluginAuthorityPair,
 } from "@metaplex-foundation/mpl-core";
 import {
   generateSigner,
@@ -114,7 +112,7 @@ export type MintCoreAssetInput = {
   attributes: Array<{ key: string; value: string }>;
   /**
    * When set, used as the new asset signer so the metadata URI can include this
-   * pubkey before `createV2` is built (co-signed mint tx).
+   * pubkey before `create` is built (co-signed mint tx).
    */
   assetSigner?: Signer;
 };
@@ -129,19 +127,17 @@ export async function buildMintCoreAssetInstructions(
 ): Promise<{ instructions: TransactionInstruction[]; asset: PublicKey; signers: Signer[] }> {
   const assetSigner = input.assetSigner ?? generateSigner(umi);
 
-  const plugins: PluginAuthorityPair[] = [
+  /** mpl-core 1.x: use `create` so plugins are mapped via `pluginAuthorityPairV2` (expects `type` + data). */
+  const plugins = [
     {
-      type: "Attributes",
+      type: "Attributes" as const,
       attributeList: input.attributes,
-    } as unknown as PluginAuthorityPair,
+    },
   ];
 
-  // The collection must be passed as a `CollectionV1` reference so the SDK can
-  // CPI into its update authority. We only need the address; the SDK will
-  // fetch the rest at send time.
-  const collectionRef = { publicKey: publicKey(input.collection.toBase58()) } as unknown as CollectionV1;
+  const collectionRef = { publicKey: publicKey(input.collection.toBase58()) };
 
-  const builder = createV2(umi, {
+  const builder = create(umi, {
     asset: assetSigner,
     collection: collectionRef,
     name: input.name,
@@ -149,7 +145,7 @@ export async function buildMintCoreAssetInstructions(
     owner: publicKey(input.owner.toBase58()),
     plugins,
     sellerFeeBasisPoints: percentAmount(0),
-  } as unknown as Parameters<typeof createV2>[1]);
+  });
 
   const umiIxs = builder.getInstructions();
   return {

@@ -25,3 +25,4 @@ solana program deploy target/deploy/launch_controller.so \
   -k "${DEVNET_WALLET}"
 
 echo "Done. Program id is in declare_id! (lib.rs), Anchor.toml, and src/lib/launch-controller/constants.ts."
+echo "If the app hits DeclaredProgramIdMismatch, redeploy this build to that same id (anchor upgrade) or set NEXT_PUBLIC_LAUNCH_CONTROLLER_PROGRAM_ID."

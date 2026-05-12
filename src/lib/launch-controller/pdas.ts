@@ -7,6 +7,18 @@ const DEPOSIT_SEED = Buffer.from("deposit");
 const MINT_RCPT_SEED = Buffer.from("mint_rcpt");
 
 export function launchControllerProgramId(): PublicKey {
+  const raw =
+    typeof process !== "undefined" &&
+    typeof process.env?.NEXT_PUBLIC_LAUNCH_CONTROLLER_PROGRAM_ID === "string"
+      ? process.env.NEXT_PUBLIC_LAUNCH_CONTROLLER_PROGRAM_ID.trim()
+      : "";
+  if (raw.length >= 32) {
+    try {
+      return new PublicKey(raw);
+    } catch {
+      /* fall through to default */
+    }
+  }
   return new PublicKey(LAUNCH_CONTROLLER_PROGRAM_ID);
 }
 
