@@ -33,6 +33,17 @@ import { buildRecordGenesisParticipationIx, fetchDecodedLaunchState, LC_MINT_ACT
 
 const MEMO_PROGRAM_ID = new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
 
+/** Keep Core `name` + Attributes compact — Meteora deposit + Core + Anchor + memo must fit Solana’s ~1232-byte message cap. */
+const ON_CHAIN_ASSET_NAME_MAX = 36;
+
+function compactOnChainAssetName(launchName: string, mintOrder: number): string {
+  const base = (launchName || "Genesis Pass").replace(/\s+/g, " ").trim();
+  const suffix = ` #${mintOrder}`;
+  const budget = Math.max(8, ON_CHAIN_ASSET_NAME_MAX - suffix.length);
+  const head = base.length <= budget ? base : `${base.slice(0, Math.max(1, budget - 1))}…`;
+  return `${head}${suffix}`;
+}
+
 export type AlphaVaultHybridMintInput = {
   user: PublicKey;
   wallet: WalletAdapterLike;
@@ -142,11 +153,10 @@ export async function buildAlphaVaultHybridMintTx(
     );
   }
   const assetUri = `${origin}/api/metadata/asset/${assetSigner.publicKey}`;
-  const entryTs = Math.floor(Date.now() / 1000);
   const mint = await buildMintCoreAssetInstructions(umi, {
     collection: coreCollection,
     owner: user,
-    name: `${launch.name} · Genesis Pass #${mintOrder}`,
+    name: compactOnChainAssetName(launch.name, mintOrder),
     uri: assetUri,
     assetSigner,
     attributes: [
@@ -154,15 +164,9 @@ export async function buildAlphaVaultHybridMintTx(
       { key: "launchId", value: coreCollection.toString() },
       { key: "launch", value: launch.slug },
       { key: "mintOrder", value: String(mintOrder) },
-      { key: "liquidityPath", value: "alpha_vault" },
       { key: "alphaVault", value: vaultPk.toBase58() },
-      /** Participation tier at mint (on-chain program may overwrite semantics). */
-      { key: "vaultTier", value: "0" },
-      { key: "entryTs", value: String(entryTs) },
-      { key: "vaultFillBpsAtMint", value: "0" },
       { key: "solPaidLamports", value: depositLamports.toString() },
       ...genesisPassTokenEntitlementMetadataAttributes(),
-      { key: "mintedAt", value: new Date().toISOString() },
     ],
   });
   instructions.push(...mint.instructions);
@@ -192,6 +196,16 @@ export async function buildAlphaVaultHybridMintTx(
     recentBlockhash: blockhash,
     instructions,
   }).compileToV0Message();
+
+  try {
+    message.serialize();
+  } catch (err) {
+    const hint =
+      err instanceof RangeError && String(err.message).includes("overruns Uint8Array")
+        ? " Solana’s single-transaction size limit was exceeded (Meteora deposit + Core mint + fees + memo). Try a shorter launch name, or contact support to split this bundle."
+        : "";
+    throw new Error(`Could not serialize mint transaction.${hint}`);
+  }
 
   const tx = new VersionedTransaction(message);
 
