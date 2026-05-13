@@ -104,8 +104,13 @@ function parseGenesisPassConfigForCreate(
   const revealLocal = asText(form, "genesisRevealAtLocal");
   const allowDynamic = asText(form, "genesisAllowDynamicPostReveal") === "1";
 
-  if (placeholderImageUrl && !isHttpsUrl(placeholderImageUrl)) {
-    return { ok: false, message: "Genesis placeholder image must be a full https:// link." };
+  if (placeholderImageUrl) {
+    if (!isHttpsUrl(placeholderImageUrl) || !isCollectionAssetPublicUrl(placeholderImageUrl)) {
+      return {
+        ok: false,
+        message: "Genesis placeholder must be an image uploaded on this site (use the upload button).",
+      };
+    }
   }
   if (rarityListingUrl && !isHttpsUrl(rarityListingUrl)) {
     return {

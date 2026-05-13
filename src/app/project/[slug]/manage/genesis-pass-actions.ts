@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getWalletSession } from "@/lib/auth/session";
 import { getPublicAppOrigin } from "@/lib/app/public-app-origin";
 import { isCollectionCreator } from "@/lib/data/store-admin";
+import { isCollectionAssetPublicUrl } from "@/lib/images/is-collection-asset-public-url";
 import { assertTraitCollectionConfig } from "@/lib/nft-generation/config-loader";
 import {
   buildGenesisBuiltinTraitConfig,
@@ -102,8 +103,11 @@ export async function updateGenesisPassNftConfig(
 
   const placeholder = asText(form, "placeholderImageUrl");
   if (!placeholder) delete next.placeholderImageUrl;
-  else if (!isHttpsUrl(placeholder)) {
-    return { ok: false, message: "Placeholder image must be an https URL." };
+  else if (!isHttpsUrl(placeholder) || !isCollectionAssetPublicUrl(placeholder)) {
+    return {
+      ok: false,
+      message: "Placeholder must be an image uploaded on this site (use the upload button).",
+    };
   } else next.placeholderImageUrl = placeholder;
 
   const rarityListing = asText(form, "rarityListingUrl");

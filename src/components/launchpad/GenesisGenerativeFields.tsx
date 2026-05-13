@@ -292,18 +292,22 @@ export function GenesisGenerativeFields() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Gl htmlFor={`${base}-placeholder`}>Placeholder while unrevealed (optional)</Gl>
-          <p className="text-[10px] text-muted">Upload an image or paste a public https image URL.</p>
-          <input
-            id={`${base}-placeholder`}
-            type="text"
-            name="genesisPlaceholderImageUrl"
-            value={placeholderUri}
-            onChange={(e) => setPlaceholderUri(e.target.value)}
-            placeholder="https://…/hidden.png"
-            autoComplete="off"
-            className={inputClass}
-          />
+          <Gl htmlFor={phFileId}>Placeholder while unrevealed (optional)</Gl>
+          <p className="text-[10px] text-muted">JPEG, PNG, WebP, or GIF — stored in your collection assets.</p>
+          <input type="hidden" name="genesisPlaceholderImageUrl" value={placeholderUri} />
+          {placeholderUri ? (
+            <div className="flex items-center gap-3">
+              {/* eslint-disable-next-line @next/next/no-img-element -- user-uploaded preview URL */}
+              <img src={placeholderUri} alt="" className="h-16 w-16 rounded-lg border border-line object-cover" />
+              <button
+                type="button"
+                onClick={() => setPlaceholderUri("")}
+                className="text-[11px] font-medium text-muted underline-offset-2 hover:text-white hover:underline"
+              >
+                Remove image
+              </button>
+            </div>
+          ) : null}
           <div className="flex flex-wrap items-center gap-2 pt-0.5">
             <input
               id={phFileId}
@@ -334,7 +338,7 @@ export function GenesisGenerativeFields() {
                 phBusy ? "pointer-events-none opacity-50" : ""
               }`}
             >
-              {phBusy ? "Uploading…" : "Upload placeholder image"}
+              {phBusy ? "Uploading…" : placeholderUri ? "Replace image" : "Upload placeholder image"}
             </label>
           </div>
         </div>

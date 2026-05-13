@@ -114,19 +114,25 @@ export function GenesisPassNftConfigForm({ collection: c }: { collection: Collec
         </label>
 
         <div className="space-y-1.5">
-          <label htmlFor={`placeholder-url-${c.slug}`} className="block text-[11px] font-medium uppercase tracking-wider text-muted">
-            Placeholder while unrevealed (upload or paste https)
+          <label htmlFor={`placeholder-file-${c.slug}`} className="block text-[11px] font-medium uppercase tracking-wider text-muted">
+            Placeholder while unrevealed (optional)
           </label>
+          <p className="text-[10px] text-muted">JPEG, PNG, WebP, or GIF — upload only.</p>
           {phHint ? <p className="text-xs text-rose-300">{phHint}</p> : null}
-          <input
-            id={`placeholder-url-${c.slug}`}
-            type="text"
-            name="placeholderImageUrl"
-            value={placeholderUrl}
-            onChange={(e) => setPlaceholderUrl(e.target.value)}
-            placeholder="https://… or upload an image"
-            className={inputClass}
-          />
+          <input type="hidden" name="placeholderImageUrl" value={placeholderUrl} />
+          {placeholderUrl ? (
+            <div className="flex items-center gap-3">
+              {/* eslint-disable-next-line @next/next/no-img-element -- user-uploaded preview URL */}
+              <img src={placeholderUrl} alt="" className="h-16 w-16 rounded-lg border border-line object-cover" />
+              <button
+                type="button"
+                onClick={() => setPlaceholderUrl("")}
+                className="text-[11px] font-medium text-muted underline-offset-2 hover:text-white hover:underline"
+              >
+                Remove image
+              </button>
+            </div>
+          ) : null}
           <div className="flex flex-wrap items-center gap-2 pt-1">
             <input
               id={`placeholder-file-${c.slug}`}
@@ -157,17 +163,8 @@ export function GenesisPassNftConfigForm({ collection: c }: { collection: Collec
                 pending || phBusy ? "pointer-events-none opacity-50" : ""
               }`}
             >
-              {phBusy ? "Uploading…" : "Upload placeholder image"}
+              {phBusy ? "Uploading…" : placeholderUrl ? "Replace image" : "Upload placeholder image"}
             </label>
-            {placeholderUrl ? (
-              <button
-                type="button"
-                onClick={() => setPlaceholderUrl("")}
-                className="text-[11px] font-medium text-muted underline-offset-2 hover:text-white hover:underline"
-              >
-                Clear URL
-              </button>
-            ) : null}
           </div>
         </div>
 
