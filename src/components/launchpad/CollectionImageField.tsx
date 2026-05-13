@@ -2,18 +2,24 @@
 
 import { useCallback, useId, useState } from "react";
 
+import { humanCollectionImageOutputLabel } from "@/lib/images/collection-image-output-spec";
+
 type FieldName = "bannerUrl" | "logoUrl";
 
 type Props = {
   name: FieldName;
   label: string;
+  /** Short line under the title (aspect ratio, use case). */
   description: string;
-  /** Tailwind aspect ratio e.g. aspect-[21/9] */
+  /** Tailwind aspect ratio for the preview frame, e.g. aspect-[21/9] */
   aspectClass: string;
   /** Controlled mode (e.g. manage page): parent owns the https URL. */
   value?: string;
   onUrlChange?: (url: string) => void;
 };
+
+const kindForName = (name: FieldName): "banner" | "logo" =>
+  name === "bannerUrl" ? "banner" : "logo";
 
 export function CollectionImageField({
   name,
@@ -23,8 +29,7 @@ export function CollectionImageField({
   value: controlledValue,
   onUrlChange,
 }: Props) {
-  const isControlled =
-    onUrlChange !== undefined && controlledValue !== undefined;
+  const isControlled = onUrlChange !== undefined && controlledValue !== undefined;
   const [internalUrl, setInternalUrl] = useState("");
   const url = isControlled ? (controlledValue ?? "") : internalUrl;
   const setUrl = useCallback(
@@ -36,11 +41,14 @@ export function CollectionImageField({
   );
 
   const base = useId();
-  const fileInputId = `${base}-file`;
-  const pasteInputId = `${base}-paste`;
+  const fileId = `${base}-file`;
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [pasteMode, setPasteMode] = useState(false);
+  const [pasteOpen, setPasteOpen] = useState(false);
+  const [draft, setDraft] = useState("");
+
+  const kind = kindForName(name);
+  const outputLabel = humanCollectionImageOutputLabel(kind);
 
   const uploadFile = useCallback(
     async (file: File) => {
@@ -49,90 +57,128 @@ export function CollectionImageField({
       try {
         const fd = new FormData();
         fd.append("file", file);
-        fd.append("kind", name === "bannerUrl" ? "banner" : "logo");
+        fd.append("kind", kind);
         const res = await fetch("/api/upload/collection-asset", { method: "POST", body: fd });
         const data = (await res.json()) as { ok?: boolean; publicUrl?: string; error?: string };
         if (!res.ok || !data.ok || !data.publicUrl) {
           throw new Error(data.error ?? "Upload didn’t complete.");
         }
         setUrl(data.publicUrl);
-        setPasteMode(false);
+        setPasteOpen(false);
+        setDraft("");
       } catch (e) {
         setError(e instanceof Error ? e.message : "Something went wrong.");
       } finally {
         setUploading(false);
       }
     },
-    [name, setUrl],
+    [kind, setUrl],
   );
 
+  function applyPastedUrl() {
+    setError(null);
+    const u = draft.trim();
+    if (!/^https:\/\/.+/i.test(u)) {
+      setError("Enter a full https:// image URL.");
+      return;
+    }
+    setUrl(u);
+    setDraft("");
+    setPasteOpen(false);
+  }
+
+  const pillBtn =
+    "cursor-pointer rounded-full border border-line bg-panel px-4 py-2 text-xs font-semibold text-white transition hover:border-white/25";
+
   return (
-    <div className="space-y-2">
-      <div className="flex flex-wrap items-end justify-between gap-2">
-        <div>
-          <label htmlFor={pasteMode ? pasteInputId : fileInputId} className="text-sm font-medium text-white">
-            {label}
-          </label>
-          <p className="mt-0.5 text-xs text-muted">{description}</p>
+    <div className="space-y-4 rounded-xl border border-line bg-panel/30 p-4">
+      <div>
+        <h3 className="text-sm font-semibold text-white">{label}</h3>
+        <p className="mt-1 text-[11px] leading-relaxed text-muted">{description}</p>
+        <p className="mt-1.5 text-[10px] leading-relaxed text-muted/90">
+          Server output: <span className="font-mono text-[10px] text-accent/90">{outputLabel}</span> · JPG, PNG, WebP,
+          or GIF · up to 5&nbsp;MB source
+        </p>
+      </div>
+
+      {url ? (
+        <div
+          className={`relative overflow-hidden rounded-xl border border-line bg-black/30 ${aspectClass} w-full max-w-full`}
+        >
+          <img src={url} alt="" className="h-full w-full object-cover" />
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+      ) : (
+        <p className="text-xs text-muted">No image yet — upload a file or paste an https link.</p>
+      )}
+
+      <div className="flex flex-wrap items-center gap-2">
+        <label
+          htmlFor={fileId}
+          className={`${pillBtn} ${uploading ? "pointer-events-none opacity-50" : ""}`}
+        >
+          {uploading ? "Uploading…" : url ? "Replace file" : "Upload file"}
+        </label>
+        <input
+          id={fileId}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          className="sr-only"
+          disabled={uploading}
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) void uploadFile(f);
+            e.target.value = "";
+          }}
+        />
+        <button
+          type="button"
+          onClick={() => {
+            setPasteOpen((o) => !o);
+            setError(null);
+          }}
+          className="text-xs font-medium text-accent/90 hover:text-accent"
+        >
+          {pasteOpen ? "Hide link field" : "Paste image link"}
+        </button>
+        {url ? (
           <button
             type="button"
             onClick={() => {
-              setPasteMode((p) => !p);
+              setUrl("");
+              setDraft("");
               setError(null);
             }}
-            className="text-xs font-medium text-accent/90 hover:text-accent"
+            className="text-xs font-medium text-rose-300/90 hover:text-rose-200"
           >
-            {pasteMode ? "Upload file instead" : "Paste image link"}
+            Remove
           </button>
-        </div>
+        ) : null}
       </div>
 
-      {pasteMode ? (
-        <input
-          id={pasteInputId}
-          value={url}
-          onChange={(e) => {
-            setUrl(e.target.value.trim());
-            setError(null);
-          }}
-          placeholder="https://…"
-          className="w-full rounded-xl border border-line bg-ink px-4 py-3 text-sm text-white placeholder:text-muted/70"
-        />
-      ) : (
-        <div
-          className={`relative overflow-hidden rounded-xl border border-dashed border-white/15 bg-white/[0.02] transition hover:border-white/25 ${aspectClass} w-full max-w-full`}
-        >
-          {url ? (
-            <img src={url} alt="" className="h-full w-full object-cover" />
-          ) : (
-            <div className="flex h-full min-h-[120px] flex-col items-center justify-center gap-2 px-4 py-8 text-center">
-              <p className="text-sm text-muted">
-                {uploading ? "Uploading…" : "Drop an image here or tap to choose"}
-              </p>
-              <p className="text-[11px] text-muted/80">
-                JPG, PNG, WebP, or GIF · up to 5 MB · saved as optimized PNG for on-chain metadata
-              </p>
-            </div>
-          )}
+      {pasteOpen ? (
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <input
-            id={fileInputId}
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif"
-            disabled={uploading}
-            className="absolute inset-0 cursor-pointer opacity-0 disabled:cursor-not-allowed"
+            type="url"
+            value={draft}
             onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) void uploadFile(f);
-              e.target.value = "";
+              setDraft(e.target.value);
+              setError(null);
             }}
+            placeholder="https://…/art.png"
+            className="w-full flex-1 rounded-xl border border-line bg-ink px-4 py-3 text-sm text-white placeholder:text-muted/60"
           />
+          <button
+            type="button"
+            onClick={applyPastedUrl}
+            className="shrink-0 rounded-full border border-line bg-panel px-4 py-2.5 text-xs font-semibold text-white hover:border-white/25"
+          >
+            Apply link
+          </button>
         </div>
-      )}
+      ) : null}
 
       <input type="hidden" name={name} value={url} />
-      {error && <p className="text-xs text-rose-300">{error}</p>}
+      {error ? <p className="text-xs text-rose-300">{error}</p> : null}
     </div>
   );
 }

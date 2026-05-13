@@ -2,6 +2,8 @@
 
 import { useCallback, useId, useState, type Dispatch, type SetStateAction } from "react";
 
+import { humanCollectionImageOutputLabel } from "@/lib/images/collection-image-output-spec";
+
 const MAX_GALLERY = 12;
 
 type Props = {
@@ -55,8 +57,9 @@ export function LaunchGallerySection({ galleryUrls, setGalleryUrls }: Props) {
       <div>
         <h3 className="text-sm font-semibold text-white">Gallery &amp; extras</h3>
         <p className="mt-1 text-[11px] leading-relaxed text-muted">
-          Uploads are converted to PNG; large images are shrunk so the long edge is at most 1600px (no upscaling). Optional
-          https links still work. Up to {MAX_GALLERY} images go into on-chain metadata{" "}
+          File uploads are normalized to{" "}
+          <span className="font-mono text-[10px] text-accent/90">{humanCollectionImageOutputLabel("gallery")}</span>.
+          Pasted https links are kept as you provide them. Up to {MAX_GALLERY} images can appear in on-chain metadata{" "}
           <code className="rounded bg-black/30 px-1 font-mono text-[10px]">properties.files</code>.
         </p>
       </div>
@@ -145,7 +148,7 @@ export function LaunchGallerySection({ galleryUrls, setGalleryUrls }: Props) {
             onClick={addDraftUrl}
             className="shrink-0 rounded-full border border-line bg-panel px-4 py-2.5 text-xs font-semibold text-white hover:border-white/25"
           >
-            Add URL
+            Apply link
           </button>
         </div>
       ) : null}

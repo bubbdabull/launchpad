@@ -83,7 +83,7 @@ export function LaunchMediaSection({
         <CollectionImageField
           name="bannerUrl"
           label="Banner"
-          description="Wide hero (~3:1). Uploads are cropped and saved as 1920×640 PNG for consistent wallet + indexer previews."
+          description="Wide hero for /project and wallet previews (~3:1 frame; image is center-cropped to fit)."
           aspectClass="aspect-[21/9] min-h-[140px]"
           value={bannerUrl}
           onUrlChange={onBannerUrlChange}
@@ -91,7 +91,7 @@ export function LaunchMediaSection({
         <CollectionImageField
           name="logoUrl"
           label="Logo / avatar"
-          description="Square mark for cards and DEX icons. Uploads are cropped and saved as 512×512 PNG."
+          description="Square mark for cards, mint UI, and DEX listings (center-cropped to fit)."
           aspectClass="aspect-square max-w-[280px]"
           value={logoUrl}
           onUrlChange={onLogoUrlChange}

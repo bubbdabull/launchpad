@@ -2,15 +2,11 @@ import "server-only";
 
 import sharp from "sharp";
 
+import { COLLECTION_IMAGE_OUTPUT, humanCollectionImageOutputLabel } from "@/lib/images/collection-image-output-spec";
 import type { CollectionAssetKind } from "@/lib/supabase/collection-asset-storage";
 
-/** Primary token / NFT icon — wallets and DEXs expect a crisp square. */
-const LOGO_SIZE = 512;
-/** Wide hero (~3:1) used by launch pages and many indexers. */
-const BANNER_WIDTH = 1920;
-const BANNER_HEIGHT = 640;
-/** Gallery stills — cap long edge so metadata stays light. */
-const GALLERY_MAX_EDGE = 1600;
+const { logoPx: LOGO_SIZE, bannerWidth: BANNER_WIDTH, bannerHeight: BANNER_HEIGHT, galleryMaxEdge: GALLERY_MAX_EDGE } =
+  COLLECTION_IMAGE_OUTPUT;
 
 const MAX_OUT_BYTES = 5 * 1024 * 1024;
 
@@ -72,8 +68,5 @@ export async function normalizeCollectionImageForMetadata(
 }
 
 export function collectionImageTargetLabel(kind: CollectionAssetKind): string {
-  if (kind === "logo") return `${LOGO_SIZE}×${LOGO_SIZE} PNG`;
-  if (kind === "banner") return `${BANNER_WIDTH}×${BANNER_HEIGHT} PNG`;
-  if (kind === "gallery") return `max ${GALLERY_MAX_EDGE}px PNG`;
-  return "PNG";
+  return humanCollectionImageOutputLabel(kind);
 }

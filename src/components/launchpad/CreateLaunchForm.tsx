@@ -292,41 +292,10 @@ export function CreateLaunchForm() {
 
       <Section
         step="00"
-        title="How this launch lines up with Solana"
-        subtitle="This form writes your launch row (off-chain mirror). Deploy on the trade page runs Metaplex + Meteora txs and wires the on-chain program."
+        title="How this works"
+        subtitle="This form saves your launch listing. Mint limits, pricing, and trading behavior are enforced on-chain when you deploy from your launch’s trade page—not by this form alone."
       >
         <ProtocolLayersHint />
-        <div className="rounded-xl border border-line bg-panel/40 p-4 text-[12px] leading-relaxed text-muted">
-          <p className="font-medium text-white/90">Launch controller program (on-chain)</p>
-          <ul className="mt-2 list-inside list-disc space-y-1">
-            <li>
-              <span className="text-white/85">initialize_launch</span> uses{" "}
-              <code className="text-[11px] text-accent/90">genesis_supply</code>,{" "}
-              <code className="text-[11px] text-accent/90">expected_quote_per_mint</code>, allocation ratios, and{" "}
-              <code className="text-[11px] text-accent/90">slice_b_*_bps</code> — set below so deploy can mirror them.
-            </li>
-            <li>
-              Lifecycle is enforced only on-chain: Draft → Vault open → Mint active → Trading → Claim → Finalized (
-              <code className="text-[11px]">advance_lifecycle</code>).
-            </li>
-            <li>
-              Genesis mint tax is <span className="text-white/85">{GENESIS_MINT_TAX_PCT_LABEL}</span> of mint price (
-              program constant), not a separate field here.
-            </li>
-            <li>
-              <span className="text-white/85">DAMM v2 + fixed supply:</span> deploy creates a Meteora customizable pool (
-              <code className="text-[11px]">hasAlphaVault</code>
-              ) with <strong className="text-white/90">permanent lock</strong> on the seeded position liquidity, then the SPL{" "}
-              <strong className="text-white/90">mint authority is revoked</strong> so the 1B supply can never be inflated.
-            </li>
-            <li>
-              <span className="text-white/85">DAMM trading tax (program):</span>{" "}
-              <code className="text-[11px]">split_trading_tax_settlement</code> —{" "}
-              {tradingTaxPctLabel()} of swap volume, then 20% of that tax to platform and your slider maps{" "}
-              <code className="text-[11px]">nft_holder_share_bps</code> on the creator leg (saved from the step below).
-            </li>
-          </ul>
-        </div>
       </Section>
 
       <Section
