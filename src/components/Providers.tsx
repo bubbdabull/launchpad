@@ -55,6 +55,10 @@ export function Providers({ children }: { children: ReactNode }) {
         accentColor: "#9be7c4",
         walletChainType: "solana-only",
         showWalletLoginFirst: false,
+        // Explicit Solana entries: on mobile Safari/Chrome Privy uses deep links /
+        // WalletConnect; named wallets first avoids a generic WC list and improves
+        // return-to-browser behavior vs opening Phantom repeatedly (Privy docs).
+        walletList: ["phantom", "solflare", "detected_solana_wallets"],
       },
       embeddedWallets: {
         // `users-without-wallets`: email/social users get an embedded wallet;

@@ -17,6 +17,10 @@ import { getWallets } from "@wallet-standard/app";
 import type { Wallet } from "@wallet-standard/base";
 
 import { pickPrimaryPrivySolanaWallet } from "@/lib/auth/privy-primary-solana-wallet";
+import { isMobileDeviceUserAgent } from "@/lib/browser/in-app-browser";
+
+/** After Phantom / WC login, an immediate `wallet.connect()` can re-open the app before Safari regains focus. */
+const MOBILE_ADAPTER_CONNECT_DELAY_MS = 1800;
 
 /**
  * Bridges Privy authentication into the existing wallet-adapter flow so
@@ -311,7 +315,13 @@ export function PrivyWalletBridge() {
 
     attemptedAddressRef.current = targetAddress;
     console.info("[PrivyWalletBridge] connecting", targetAddress);
+    const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+    const useMobileDelay = isMobileDeviceUserAgent(ua);
+
+    let connectStarted = false;
     const runConnect = () => {
+      if (!authenticated || !targetAddress) return;
+      connectStarted = true;
       void connect().catch((err) => {
         console.warn("[PrivyWalletBridge] connect failed", err);
         attemptedAddressRef.current = null;
@@ -321,8 +331,20 @@ export function PrivyWalletBridge() {
         });
       });
     };
-    // Defer one microtask so `select()` has propagated to `wallet` in state.
-    queueMicrotask(runConnect);
+
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    if (useMobileDelay) {
+      timer = setTimeout(runConnect, MOBILE_ADAPTER_CONNECT_DELAY_MS);
+    } else {
+      queueMicrotask(runConnect);
+    }
+
+    return () => {
+      if (timer !== undefined) clearTimeout(timer);
+      if (useMobileDelay && !connectStarted) {
+        attemptedAddressRef.current = null;
+      }
+    };
   }, [
     authenticated,
     targetAddress,
