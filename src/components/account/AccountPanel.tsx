@@ -199,7 +199,7 @@ function PrivyAccountPanel({ signedInAddress }: Props) {
   async function handleSignOut() {
     setBusy(true);
     try {
-      await fetch("/api/auth/privy/logout", { method: "POST" });
+      await fetch("/api/auth/privy/logout", { method: "POST", credentials: "include" });
       try {
         await disconnect();
       } catch {
@@ -437,7 +437,7 @@ function PlainAccountPanel({ signedInAddress }: Props) {
   async function handleSignOut() {
     setBusy(true);
     try {
-      await fetch("/api/auth/siws/logout", { method: "POST" });
+      await fetch("/api/auth/siws/logout", { method: "POST", credentials: "include" });
       try {
         await disconnect();
       } catch {

@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import type { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
 const SESSION_COOKIE = "lp_wallet_session";
@@ -45,7 +46,27 @@ function decode(token: string): WalletSession | null {
   }
 }
 
-export async function createWalletSession(address: string, cluster: string) {
+function sessionCookieOptions() {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+    path: "/",
+    maxAge: SESSION_TTL_SECONDS,
+  };
+}
+
+function nonceCookieOptions() {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+    path: "/",
+    maxAge: 60 * 10,
+  };
+}
+
+function buildWalletSessionToken(address: string, cluster: string): string {
   const now = Math.floor(Date.now() / 1000);
   const payload: WalletSession = {
     address,
@@ -53,14 +74,37 @@ export async function createWalletSession(address: string, cluster: string) {
     issuedAt: now,
     expiresAt: now + SESSION_TTL_SECONDS,
   };
+  return encode(payload);
+}
+
+/**
+ * Route handlers must attach session cookies via `NextResponse.cookies`; using
+ * `cookies().set()` alone often omits `Set-Cookie` on the HTTP response (mobile
+ * + client `fetch` then never persist the session).
+ */
+export function appendWalletSessionCookie(
+  res: NextResponse,
+  address: string,
+  cluster: string,
+): void {
+  res.cookies.set(SESSION_COOKIE, buildWalletSessionToken(address, cluster), sessionCookieOptions());
+}
+
+export function appendClearWalletSessionCookie(res: NextResponse): void {
+  res.cookies.delete(SESSION_COOKIE);
+}
+
+export function appendSiwsNonceCookie(res: NextResponse, nonce: string): void {
+  res.cookies.set(NONCE_COOKIE, nonce, nonceCookieOptions());
+}
+
+export function appendClearSiwsNonceCookie(res: NextResponse): void {
+  res.cookies.delete(NONCE_COOKIE);
+}
+
+export async function createWalletSession(address: string, cluster: string) {
   const store = await cookies();
-  store.set(SESSION_COOKIE, encode(payload), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: SESSION_TTL_SECONDS,
-  });
+  store.set(SESSION_COOKIE, buildWalletSessionToken(address, cluster), sessionCookieOptions());
 }
 
 export async function clearWalletSession() {
@@ -77,13 +121,7 @@ export async function getWalletSession(): Promise<WalletSession | null> {
 
 export async function setSiwsNonce(nonce: string) {
   const store = await cookies();
-  store.set(NONCE_COOKIE, nonce, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 10,
-  });
+  store.set(NONCE_COOKIE, nonce, nonceCookieOptions());
 }
 
 export async function getSiwsNonce(): Promise<string | null> {

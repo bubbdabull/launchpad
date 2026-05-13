@@ -5,7 +5,7 @@
 
 import { NextResponse } from "next/server";
 
-import { clearWalletSession } from "@/lib/auth/session";
+import { appendClearWalletSessionCookie } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +16,7 @@ export const dynamic = "force-dynamic";
  * either side alone leaves the user in a half-logged-out state.
  */
 export async function POST() {
-  await clearWalletSession();
-  return NextResponse.json({ ok: true });
+  const res = NextResponse.json({ ok: true });
+  appendClearWalletSessionCookie(res);
+  return res;
 }

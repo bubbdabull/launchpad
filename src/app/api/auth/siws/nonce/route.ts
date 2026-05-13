@@ -6,7 +6,7 @@
 import crypto from "crypto";
 import { NextResponse } from "next/server";
 
-import { setSiwsNonce } from "@/lib/auth/session";
+import { appendSiwsNonceCookie } from "@/lib/auth/session";
 import { rateLimitOr429 } from "@/lib/security/apply-rate-limit";
 import { envPositiveInt } from "@/lib/security/env-num";
 
@@ -19,6 +19,7 @@ export async function GET(req: Request) {
   if (limited) return limited;
 
   const nonce = crypto.randomBytes(16).toString("hex");
-  await setSiwsNonce(nonce);
-  return NextResponse.json({ nonce });
+  const res = NextResponse.json({ nonce });
+  appendSiwsNonceCookie(res, nonce);
+  return res;
 }

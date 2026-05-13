@@ -83,7 +83,7 @@ export function useSiwsSignIn() {
       setError(null);
       setStatus("busy");
 
-      const nonceRes = await fetch("/api/auth/siws/nonce");
+      const nonceRes = await fetch("/api/auth/siws/nonce", { credentials: "include" });
       const { data: nonceJson } = await parseFetchJson<{ nonce?: string }>(nonceRes);
       if (!nonceRes.ok || !nonceJson?.nonce) {
         throw new Error(
@@ -113,6 +113,7 @@ export function useSiwsSignIn() {
 
       const verifyRes = await fetch("/api/auth/siws/verify", {
         method: "POST",
+        credentials: "include",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ message, signature, address }),
       });

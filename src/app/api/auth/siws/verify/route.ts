@@ -6,8 +6,8 @@
 import { NextResponse } from "next/server";
 
 import {
-  clearSiwsNonce,
-  createWalletSession,
+  appendClearSiwsNonceCookie,
+  appendWalletSessionCookie,
   getSiwsNonce,
 } from "@/lib/auth/session";
 import { parseSiwsMessage, verifySiwsSignature } from "@/lib/auth/siws";
@@ -55,7 +55,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "Signature verification failed." }, { status: 401 });
   }
 
-  await clearSiwsNonce();
-  await createWalletSession(address, fields.cluster ?? "devnet");
-  return NextResponse.json({ ok: true });
+  const res = NextResponse.json({ ok: true });
+  appendWalletSessionCookie(res, address, fields.cluster ?? "devnet");
+  appendClearSiwsNonceCookie(res);
+  return res;
 }

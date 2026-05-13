@@ -95,7 +95,7 @@ function PrivySessionSyncInner() {
       window.clearTimeout(retryTimerRef.current);
       retryTimerRef.current = null;
     }
-    void fetch("/api/auth/privy/logout", { method: "POST" }).then(() => {
+    void fetch("/api/auth/privy/logout", { method: "POST", credentials: "include" }).then(() => {
       pushState({ kind: "idle" });
       router.refresh();
     });
@@ -138,6 +138,7 @@ function PrivySessionSyncInner() {
         }
         const res = await fetch("/api/auth/privy/login", {
           method: "POST",
+          credentials: "include",
           headers: { authorization: `Bearer ${token}` },
         });
         if (res.ok) {

@@ -88,7 +88,7 @@ function PrivyAuthButton({ signedInAddress }: Props) {
   async function handleSignOut() {
     setBusy(true);
     try {
-      await fetch("/api/auth/privy/logout", { method: "POST" });
+      await fetch("/api/auth/privy/logout", { method: "POST", credentials: "include" });
       try {
         await disconnect();
       } catch {
@@ -186,7 +186,7 @@ function WalletAdapterFallbackButton({ signedInAddress }: Props) {
   async function handleClick() {
     if (isSignedIn) {
       setBusyOverride("busy");
-      await fetch("/api/auth/siws/logout", { method: "POST" });
+      await fetch("/api/auth/siws/logout", { method: "POST", credentials: "include" });
       try {
         await disconnect();
       } catch {

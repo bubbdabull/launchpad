@@ -5,7 +5,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 
-import { createWalletSession } from "@/lib/auth/session";
+import { appendWalletSessionCookie } from "@/lib/auth/session";
 import {
   PRIVY_SERVER_ENABLED,
   getPrivyClient,
@@ -110,13 +110,13 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  await createWalletSession(address, getPublicCluster());
-
-  return NextResponse.json({
+  const res = NextResponse.json({
     ok: true,
     address,
     privyUserId: claims.userId,
   });
+  appendWalletSessionCookie(res, address, getPublicCluster());
+  return res;
 }
 
 export function GET() {
