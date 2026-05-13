@@ -17,8 +17,13 @@ import {
   tokenSocialLinksFromForm,
   validateTokenSocialLinks,
 } from "@/lib/launch/token-social";
+import { getPublicAppOrigin } from "@/lib/app/public-app-origin";
 import { isCollectionAssetPublicUrl } from "@/lib/images/is-collection-asset-public-url";
 import { assertTraitCollectionConfig } from "@/lib/nft-generation/config-loader";
+import {
+  buildGenesisBuiltinTraitConfig,
+  isGenesisBuiltinTraitPresetId,
+} from "@/lib/nft-generation/presets/built-in-genesis-presets";
 import { buildCreationProtocolLayersSnapshot } from "@/lib/protocol/creation-protocol-layers";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import type { GenesisPassNftConfig } from "@/types/genesis-pass-nft";
@@ -89,8 +94,10 @@ function parseLamports(value: string): bigint | null {
 
 function parseGenesisPassConfigForCreate(
   form: FormData,
+  publicOrigin: string | null,
 ): { ok: true; value: GenesisPassNftConfig | null } | { ok: false; message: string } {
   const traitJson = asText(form, "genesisTraitConfigJson");
+  const traitPreset = asText(form, "genesisTraitPreset");
   const traitConfigUri = asText(form, "genesisTraitConfigUri");
   const placeholderImageUrl = asText(form, "genesisPlaceholderImageUrl");
   const rarityListingUrl = asText(form, "genesisRarityListingUrl");
@@ -128,6 +135,15 @@ function parseGenesisPassConfigForCreate(
       const msg = e instanceof Error ? e.message : "Invalid JSON.";
       return { ok: false, message: `Trait config: ${msg}` };
     }
+  } else if (isGenesisBuiltinTraitPresetId(traitPreset)) {
+    if (!publicOrigin) {
+      return {
+        ok: false,
+        message:
+          "Set NEXT_PUBLIC_APP_URL (your public site URL) to use a built-in trait preset, or paste custom JSON instead.",
+      };
+    }
+    next.traitConfig = buildGenesisBuiltinTraitConfig(traitPreset, publicOrigin);
   } else if (traitConfigUri) {
     if (!isHttpsUrl(traitConfigUri)) {
       return { ok: false, message: "Trait config URL must be a full https:// link." };
@@ -344,7 +360,8 @@ export async function createDraftCollection(
   const platformTreasuryError = ensureSolanaAddress(platformTreasury, "Platform treasury");
   if (platformTreasuryError) return { ok: false, message: platformTreasuryError };
 
-  const genesisParsed = parseGenesisPassConfigForCreate(form);
+  const publicOrigin = await getPublicAppOrigin();
+  const genesisParsed = parseGenesisPassConfigForCreate(form, publicOrigin);
   if (!genesisParsed.ok) return { ok: false, message: genesisParsed.message };
 
   const creationProtocolLayers = buildCreationProtocolLayersSnapshot();

@@ -3,8 +3,14 @@
 import { revalidatePath } from "next/cache";
 
 import { getWalletSession } from "@/lib/auth/session";
+import { getPublicAppOrigin } from "@/lib/app/public-app-origin";
 import { isCollectionCreator } from "@/lib/data/store-admin";
 import { assertTraitCollectionConfig } from "@/lib/nft-generation/config-loader";
+import {
+  buildGenesisBuiltinTraitConfig,
+  GENESIS_TRAIT_PRESET_STARTER,
+  isGenesisBuiltinTraitPresetId,
+} from "@/lib/nft-generation/presets/built-in-genesis-presets";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import type { GenesisPassNftConfig } from "@/types/genesis-pass-nft";
 
@@ -111,7 +117,27 @@ export async function updateGenesisPassNftConfig(
 
   const traitUri = asText(form, "traitConfigUri");
   const advanced = asText(form, "traitConfigJson");
-  if (advanced) {
+  const applyPresetId = asText(form, "applyGenesisTraitPreset");
+  const legacyStarter = asText(form, "applyStarterTraitPreset") === "1";
+  const presetToApply =
+    applyPresetId && isGenesisBuiltinTraitPresetId(applyPresetId)
+      ? applyPresetId
+      : legacyStarter
+        ? GENESIS_TRAIT_PRESET_STARTER
+        : "";
+
+  if (presetToApply) {
+    const origin = await getPublicAppOrigin();
+    if (!origin) {
+      return {
+        ok: false,
+        message:
+          "Set NEXT_PUBLIC_APP_URL (your public site URL) to apply a built-in trait preset, or paste custom JSON instead.",
+      };
+    }
+    next.traitConfig = buildGenesisBuiltinTraitConfig(presetToApply, origin);
+    delete next.traitConfigUri;
+  } else if (advanced) {
     try {
       const parsed = JSON.parse(advanced) as unknown;
       next.traitConfig = assertTraitCollectionConfig(parsed);

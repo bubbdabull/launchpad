@@ -7,6 +7,7 @@ import {
   updateGenesisPassNftConfig,
   type GenesisPassManageState,
 } from "@/app/project/[slug]/manage/genesis-pass-actions";
+import { GENESIS_BUILTIN_PRESET_OPTIONS } from "@/lib/nft-generation/presets/built-in-genesis-presets";
 import type { Collection } from "@/types/collection";
 
 function toDatetimeLocalValue(iso: string | undefined): string {
@@ -193,6 +194,29 @@ export function GenesisPassNftConfigForm({ collection: c }: { collection: Collec
           />
           Allow dynamic metadata URL after reveal (prefer pinning + Core URI update for production)
         </label>
+
+        <div className="space-y-1.5 rounded-lg border border-accent/25 bg-accent/[0.06] p-3 text-xs text-muted">
+          <label htmlFor={`apply-preset-${c.slug}`} className="block font-medium text-white/90">
+            Replace traits with a built-in preset
+          </label>
+          <p className="text-[10px] leading-relaxed">
+            Three weighted layers, images from this site. Choosing a preset ignores the JSON box on submit. Requires{" "}
+            <span className="font-mono text-[10px] text-white/80">NEXT_PUBLIC_APP_URL</span>.
+          </p>
+          <select
+            id={`apply-preset-${c.slug}`}
+            name="applyGenesisTraitPreset"
+            defaultValue=""
+            className="w-full max-w-lg rounded-lg border border-line bg-ink px-3 py-2 text-sm text-white"
+          >
+            <option value="">— No preset (keep JSON / URL below) —</option>
+            {GENESIS_BUILTIN_PRESET_OPTIONS.map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.label} — {o.blurb}
+              </option>
+            ))}
+          </select>
+        </div>
 
         <div className="space-y-1.5 border-t border-white/10 pt-4">
           {traitFileHint ? <p className="text-xs text-rose-300">{traitFileHint}</p> : null}
