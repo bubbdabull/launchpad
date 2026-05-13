@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://creator-launchpad.local/schemas/trait-config.schema.json",
+  "title": "Genesis Pass trait configuration",
+  "type": "object",
+  "required": ["schemaVersion", "width", "height", "layers"],
+  "additionalProperties": true,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "width": { "type": "integer", "minimum": 16, "maximum": 8192 },
+    "height": { "type": "integer", "minimum": 16, "maximum": 8192 },
+    "backgroundColor": { "type": "string" },
+    "layers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "displayName", "order", "traits"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "displayName": { "type": "string", "minLength": 1 },
+          "order": { "type": "integer" },
+          "traits": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["id", "name", "weight", "file"],
+              "properties": {
+                "id": { "type": "string" },
+                "name": { "type": "string" },
+                "weight": { "type": "number", "minimum": 0 },
+                "file": { "type": "string" },
+                "tier": { "enum": ["Common", "Rare", "Epic", "Legendary"] },
+                "animation": { "type": "boolean" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "incompatibilities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["when", "forbid"],
+        "properties": {
+          "when": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["layerId", "traitId"],
+              "properties": {
+                "layerId": { "type": "string" },
+                "traitId": { "type": "string" }
+              }
+            }
+          },
+          "forbid": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["layerId", "traitId"],
+              "properties": {
+                "layerId": { "type": "string" },
+                "traitId": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "overrides": { "type": "object" }
+  }
+}

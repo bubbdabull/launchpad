@@ -1,5 +1,6 @@
 import type { MintTier } from "@/lib/launch/mint-tiers";
 import type { ProjectPageDoc } from "@/lib/launch/project-page";
+import type { GenesisPassNftConfig } from "@/types/genesis-pass-nft";
 import type { TokenMetadataProfile } from "@/lib/launch/token-metadata-profile";
 import type { TokenSocialLinks } from "@/lib/launch/token-social";
 
@@ -41,6 +42,11 @@ export type Collection = {
   alphaVault?: string;
   /** Metaplex Core collection mint (the "collection NFT"). */
   coreCollection?: string;
+  /**
+   * Optional generative Genesis Pass pipeline (traits, reveal timing, placeholder art).
+   * **Cosmetic / metadata only** — never used for claim math or holder entitlements.
+   */
+  genesisPassNft?: GenesisPassNftConfig;
   /**
    * **Infrastructure metadata only** — cached Meteora DAMM v2 pool pubkey for routing,
    * explorers, and copy-paste UX. It is **not** a lifecycle signal: do not use presence,

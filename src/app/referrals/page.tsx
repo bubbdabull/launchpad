@@ -23,8 +23,9 @@ export default async function ReferralsPage() {
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
           Share your wallet-tagged link to any launch. Anyone who clicks through and mints a Genesis
-          Pass within 90 days is permanently linked to you. The platform&rsquo;s 0.02 SOL mint fee is split
-          with referrers — your stats here track the volume you&rsquo;ve driven.
+          Pass within 90 days is permanently linked to you. The platform&rsquo;s genesis mint tax (7% of mint
+          price, same as the launch-controller program) may be split with referrers — your stats here track the
+          volume you&rsquo;ve driven.
         </p>
       </div>
 
@@ -46,8 +47,8 @@ export default async function ReferralsPage() {
       <div className="rounded-2xl border border-line bg-panel/40 p-6 text-sm leading-relaxed text-muted">
         <p className="text-[10px] uppercase tracking-wider text-muted">How payouts work</p>
         <p className="mt-2">
-          Referrals are recorded the moment a Pass mint confirms on Solana. The platform takes a
-          fixed 0.02 SOL per mint; a portion of that is reserved for referrers and accrues to your
+          Referrals are recorded the moment a Pass mint confirms on Solana. The platform collects a
+          genesis mint tax (7% of mint price); a portion may be reserved for referrers and accrue to your
           balance here. Payouts batch weekly to keep tx costs low. The schema (
           <span className="font-mono text-white/80">paid_out_lamports</span>) is what the payout
           worker fills in.

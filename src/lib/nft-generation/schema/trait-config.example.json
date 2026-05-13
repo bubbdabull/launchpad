@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "width": 1200,
+  "height": 1200,
+  "backgroundColor": "#0b0f14",
+  "layers": [
+    {
+      "id": "background",
+      "displayName": "Background",
+      "order": 0,
+      "traits": [
+        { "id": "void", "name": "Void", "weight": 70, "file": "layers/background/void.png", "tier": "Common" },
+        { "id": "nebula", "name": "Nebula", "weight": 20, "file": "layers/background/nebula.png", "tier": "Rare" },
+        { "id": "supernova", "name": "Supernova", "weight": 8, "file": "layers/background/supernova.png", "tier": "Epic" },
+        { "id": "genesis_grid", "name": "Genesis Grid", "weight": 2, "file": "layers/background/genesis-grid.png", "tier": "Legendary" }
+      ]
+    },
+    {
+      "id": "character",
+      "displayName": "Character",
+      "order": 1,
+      "traits": [
+        { "id": "voyager", "name": "Voyager", "weight": 55, "file": "layers/character/voyager.png", "tier": "Common" },
+        { "id": "archivist", "name": "Archivist", "weight": 25, "file": "layers/character/archivist.png", "tier": "Rare" },
+        { "id": "oracle", "name": "Oracle", "weight": 12, "file": "layers/character/oracle.png", "tier": "Epic" },
+        { "id": "founder", "name": "Founder", "weight": 8, "file": "layers/character/founder.png", "tier": "Legendary" }
+      ]
+    },
+    {
+      "id": "eyes",
+      "displayName": "Eyes",
+      "order": 2,
+      "traits": [
+        { "id": "signal", "name": "Signal", "weight": 60, "file": "layers/eyes/signal.png", "tier": "Common" },
+        { "id": "pulse", "name": "Pulse", "weight": 25, "file": "layers/eyes/pulse.png", "tier": "Rare" },
+        { "id": "prism", "name": "Prism", "weight": 10, "file": "layers/eyes/prism.png", "tier": "Epic" },
+        { "id": "singularity", "name": "Singularity", "weight": 5, "file": "layers/eyes/singularity.png", "tier": "Legendary" }
+      ]
+    },
+    {
+      "id": "headwear",
+      "displayName": "Headwear",
+      "order": 3,
+      "traits": [
+        { "id": "none", "name": "None", "weight": 40, "file": "layers/headwear/none.png", "tier": "Common" },
+        { "id": "visor", "name": "Visor", "weight": 35, "file": "layers/headwear/visor.png", "tier": "Rare" },
+        { "id": "halo_rig", "name": "Halo Rig", "weight": 15, "file": "layers/headwear/halo-rig.png", "tier": "Epic" },
+        { "id": "crown_array", "name": "Crown Array", "weight": 10, "file": "layers/headwear/crown-array.png", "tier": "Legendary" }
+      ]
+    },
+    {
+      "id": "border",
+      "displayName": "Border",
+      "order": 4,
+      "traits": [
+        { "id": "etched", "name": "Etched", "weight": 65, "file": "layers/border/etched.png", "tier": "Common" },
+        { "id": "chromed", "name": "Chromed", "weight": 22, "file": "layers/border/chromed.png", "tier": "Rare" },
+        { "id": "monolith", "name": "Monolith", "weight": 9, "file": "layers/border/monolith.png", "tier": "Epic" },
+        { "id": "auric", "name": "Auric", "weight": 4, "file": "layers/border/auric.png", "tier": "Legendary" }
+      ]
+    },
+    {
+      "id": "aura",
+      "displayName": "Aura",
+      "order": 5,
+      "traits": [
+        { "id": "quiet", "name": "Quiet Field", "weight": 68, "file": "layers/aura/quiet.png", "tier": "Common" },
+        { "id": "ion", "name": "Ion Mist", "weight": 20, "file": "layers/aura/ion.png", "tier": "Rare" },
+        { "id": "plasma", "name": "Plasma Bloom", "weight": 10, "file": "layers/aura/plasma.png", "tier": "Epic" },
+        { "id": "legendary_glow", "name": "Legendary Glow", "weight": 2, "file": "layers/aura/legendary-glow.png", "tier": "Legendary", "animation": true }
+      ]
+    },
+    {
+      "id": "fx",
+      "displayName": "FX",
+      "order": 6,
+      "traits": [
+        { "id": "clean", "name": "Clean", "weight": 72, "file": "layers/fx/clean.png", "tier": "Common" },
+        { "id": "glitch", "name": "Glitch", "weight": 18, "file": "layers/fx/glitch.png", "tier": "Rare" },
+        { "id": "particle", "name": "Particle Storm", "weight": 8, "file": "layers/fx/particle.png", "tier": "Epic" },
+        { "id": "singularity_fx", "name": "Singularity Lens", "weight": 2, "file": "layers/fx/singularity.png", "tier": "Legendary" }
+      ]
+    },
+    {
+      "id": "rank",
+      "displayName": "Rank",
+      "order": 7,
+      "traits": [
+        { "id": "initiate", "name": "Initiate", "weight": 70, "file": "layers/rank/initiate.png", "tier": "Common" },
+        { "id": "operator", "name": "Operator", "weight": 20, "file": "layers/rank/operator.png", "tier": "Rare" },
+        { "id": "archon", "name": "Archon", "weight": 8, "file": "layers/rank/archon.png", "tier": "Epic" },
+        { "id": "prime", "name": "Prime", "weight": 2, "file": "layers/rank/prime.png", "tier": "Legendary" }
+      ]
+    }
+  ],
+  "incompatibilities": [
+    {
+      "when": [
+        { "layerId": "headwear", "traitId": "crown_array" },
+        { "layerId": "aura", "traitId": "legendary_glow" }
+      ],
+      "forbid": [{ "layerId": "fx", "traitId": "clean" }]
+    }
+  ]
+}

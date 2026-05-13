@@ -21,6 +21,9 @@
 # production
 /build
 
+# Local generative Genesis Pass batch output (see scripts/generate-genesis-collection.ts)
+/generated
+
 # misc
 .DS_Store
 *.pem

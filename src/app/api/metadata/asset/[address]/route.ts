@@ -6,6 +6,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { buildAssetMetadataJson } from "@/lib/metadata/build-metadata";
+import { mergeGenerativeGenesisIntoAssetMetadata } from "@/lib/metadata/genesis-generative";
 import { loadCollectionForMetadata } from "@/lib/metadata/load-collection";
 import { inferRequestOrigin } from "@/lib/metadata/request-origin";
 import { getAsset, getAssetAttributes } from "@/lib/solana/helius";
@@ -50,14 +51,22 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ address: st
 
   const origin = inferRequestOrigin(req);
 
-  return NextResponse.json(
-    buildAssetMetadataJson({
-      collection,
-      origin,
-      assetName,
-      chainAttributes,
-    }),
-    {
+  const base = buildAssetMetadataJson({
+    collection,
+    origin,
+    assetName,
+    chainAttributes,
+  });
+
+  const body = await mergeGenerativeGenesisIntoAssetMetadata({
+    base,
+    collection,
+    origin,
+    assetAddress: address,
+    chainAttributes,
+  });
+
+  return NextResponse.json(body, {
       headers: {
         "cache-control": "public, s-maxage=30, stale-while-revalidate=120",
       },

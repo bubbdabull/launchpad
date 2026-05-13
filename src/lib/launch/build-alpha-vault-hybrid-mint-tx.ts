@@ -19,7 +19,7 @@ import {
 } from "@solana/web3.js";
 
 import { relaxedGenesisMintWithoutLifecycle } from "@/lib/launch/genesis-mint-config";
-import { getPlatformMintFeeLamports } from "@/lib/launch/platform-fees";
+import { genesisMintTaxTotalLamports } from "@/lib/launch/genesis-mint-tax";
 import {
   buildMintCoreAssetInstructions,
   createUmiForEndpoint,
@@ -102,7 +102,7 @@ export async function buildAlphaVaultHybridMintTx(
   const depositLamports =
     input.mintPriceLamportsOverride ??
     ensure(launch.mintPriceLamports, "Launch is missing mintPriceLamports.");
-  const platformFeeLamports = getPlatformMintFeeLamports();
+  const genesisMintTaxLamports = genesisMintTaxTotalLamports(depositLamports);
 
   const alphaVault = await AlphaVaultSdk.create(connection, vaultPk, {
     cluster: getPublicCluster(),
@@ -111,6 +111,20 @@ export async function buildAlphaVaultHybridMintTx(
   if (alphaVault.vault.whitelistMode !== WhitelistMode.Permissionless) {
     throw new Error(
       "This Alpha Vault is permissioned. Only permissionless vaults are supported in the mint flow for now.",
+    );
+  }
+
+  const interaction = await alphaVault.interactionState(null, null);
+  if (!interaction.canDeposit) {
+    const vp = alphaVault.vaultPoint;
+    const stateLabels = ["PREPARING", "DEPOSITING", "PURCHASING", "LOCKING", "VESTING", "ENDED"] as const;
+    const st = alphaVault.vaultState;
+    const slot = await connection.getSlot("confirmed");
+    throw new Error(
+      `This Alpha Vault cannot take deposits now (state: ${stateLabels[st] ?? String(st)}, current slot ~${slot}). ` +
+        `FCFS deposits are only allowed between slots ~${vp.firstJoinPoint} and ~${vp.lastJoinPoint}. ` +
+        `If that window has ended, Meteora returns error 6004 (NotPermitThisActionInThisTimePoint). ` +
+        `For new launches, set NEXT_PUBLIC_POOL_ACTIVATION_SLOTS_AHEAD to a larger value (see .env.example) and recreate the pool + Alpha Vault, then update the launch record.`,
     );
   }
 
@@ -123,7 +137,7 @@ export async function buildAlphaVaultHybridMintTx(
     SystemProgram.transfer({
       fromPubkey: user,
       toPubkey: platformTreasury,
-      lamports: Number(platformFeeLamports),
+      lamports: Number(genesisMintTaxLamports),
     }),
   );
   instructions.push(...depositInstructions);
@@ -173,7 +187,12 @@ export async function buildAlphaVaultHybridMintTx(
     uri: assetUri,
     assetSigner,
     /** One Attributes entry — `/api/metadata/asset` resolves slug; JSON adds the rest. Saves v0 message bytes. */
-    attributes: [{ key: "launch", value: launch.slug }],
+    attributes: [
+      { key: "launch", value: launch.slug },
+      /** Off-chain mirror hint for metadata / marketplaces — not used for claim math. */
+      { key: "mintOrder", value: String(mintOrder) },
+      { key: "mintSupply", value: String(launch.supply) },
+    ],
   });
   instructions.push(...mint.instructions);
 

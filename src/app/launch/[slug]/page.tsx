@@ -2,12 +2,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { LaunchMissionShell } from "@/components/launch/LaunchMissionShell";
-import { DualMarketDiscoveryCard } from "@/components/launch/DualMarketDiscoveryCard";
 import { DeployOnChainPanel } from "@/components/launch/DeployOnChainPanel";
+import { DualMarketDiscoveryCard } from "@/components/launch/DualMarketDiscoveryCard";
+import { LaunchMissionShell } from "@/components/launch/LaunchMissionShell";
 import { MintTiersPanel } from "@/components/launch/MintTiersPanel";
 import { PassYieldPanel } from "@/components/launch/PassYieldPanel";
 import { RewardHoldersPanel } from "@/components/launch/RewardHoldersPanel";
+import { GenesisGenerativeBanner } from "@/components/genesis/GenesisGenerativeBanner";
 import { getWalletSession } from "@/lib/auth/session";
 import { getCreatorProfile } from "@/lib/creators/profiles";
 import { getCollectionBySlug } from "@/lib/data/launchpad";
@@ -112,6 +113,9 @@ export default async function LaunchPage({ params }: PageProps) {
 
       <LaunchMissionShell collection={c} creatorProfile={creatorProfile}>
         <div className="space-y-8 lg:py-2">
+        {c.genesisPassNft ? (
+          <GenesisGenerativeBanner slug={c.slug} config={c.genesisPassNft} />
+        ) : null}
         {showDeployPanel ? <DeployOnChainPanel collection={c} /> : null}
         <MintTiersPanel collection={c} />
         <PassYieldPanel collection={c} />

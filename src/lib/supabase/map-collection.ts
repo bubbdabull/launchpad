@@ -5,7 +5,9 @@ import {
   type TokenMetadataProfile,
 } from "@/lib/launch/token-metadata-profile";
 import type { TokenSocialLinks } from "@/lib/launch/token-social";
+import type { TraitCollectionConfig } from "@/lib/nft-generation/types";
 import type { ChainId, Collection, MintStatus } from "@/types/collection";
+import type { GenesisPassNftConfig } from "@/types/genesis-pass-nft";
 
 /** Row shape from `public.collections` (PostgREST). */
 export type CollectionRow = {
@@ -82,6 +84,8 @@ export type CollectionRow = {
   nft_gallery_urls?: unknown;
   token_social_links?: unknown;
   token_metadata_profile?: unknown;
+  /** Optional generative Genesis Pass config (JSON). */
+  genesis_pass_config?: unknown;
 };
 
 function asChainId(_v: string): ChainId {
@@ -148,6 +152,34 @@ function asQuoteAsset(v: string | null | undefined): "SOL" | "USDC" | undefined 
   if (v === "USDC") return "USDC";
   if (v === "SOL") return "SOL";
   return undefined;
+}
+
+function asGenesisPassNftConfig(v: unknown): GenesisPassNftConfig | undefined {
+  if (v == null || typeof v !== "object" || Array.isArray(v)) return undefined;
+  const o = v as Record<string, unknown>;
+  const revealAt = typeof o.revealAt === "string" && o.revealAt.trim() ? o.revealAt.trim() : undefined;
+  const placeholderImageUrl =
+    typeof o.placeholderImageUrl === "string" && o.placeholderImageUrl.trim()
+      ? o.placeholderImageUrl.trim()
+      : undefined;
+  const traitConfigUri =
+    typeof o.traitConfigUri === "string" && /^https:\/\//i.test(o.traitConfigUri.trim())
+      ? o.traitConfigUri.trim()
+      : undefined;
+  const allowDynamicPostReveal = typeof o.allowDynamicPostReveal === "boolean" ? o.allowDynamicPostReveal : undefined;
+  let traitConfig: TraitCollectionConfig | undefined;
+  if (o.traitConfig != null && typeof o.traitConfig === "object" && !Array.isArray(o.traitConfig)) {
+    const tc = o.traitConfig as TraitCollectionConfig;
+    if (tc.schemaVersion === 1 && Array.isArray(tc.layers)) traitConfig = tc;
+  }
+  if (!revealAt && !placeholderImageUrl && !traitConfigUri && !traitConfig) return undefined;
+  const out: GenesisPassNftConfig = {};
+  if (revealAt) out.revealAt = revealAt;
+  if (placeholderImageUrl) out.placeholderImageUrl = placeholderImageUrl;
+  if (traitConfigUri) out.traitConfigUri = traitConfigUri;
+  if (traitConfig) out.traitConfig = traitConfig;
+  if (allowDynamicPostReveal != null) out.allowDynamicPostReveal = allowDynamicPostReveal;
+  return out;
 }
 
 export function rowToCollection(row: CollectionRow): Collection {
@@ -217,5 +249,6 @@ export function rowToCollection(row: CollectionRow): Collection {
         : null,
     projectHeadline: row.project_headline ?? null,
     projectSubhead: row.project_subhead ?? null,
+    genesisPassNft: asGenesisPassNftConfig(row.genesis_pass_config),
   };
 }

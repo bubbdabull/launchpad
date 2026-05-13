@@ -13,6 +13,12 @@ import { projectPageDocFromAiStoryBlocks, type FullProjectCopy } from "@/lib/ai/
 import { isValidAccentColor, type ProjectPageDoc } from "@/lib/launch/project-page";
 import { serializeTokenMetadataProfile, type TokenMetadataProfile } from "@/lib/launch/token-metadata-profile";
 
+import {
+  genesisMintTaxTotalLamports,
+  GENESIS_MINT_TAX_BPS,
+  mintPriceSolToLamports,
+} from "@/lib/launch/genesis-mint-tax";
+
 import { LaunchArtStudio } from "./LaunchArtStudio";
 
 const initialState: CreateLaunchState = { ok: false };
@@ -35,10 +41,7 @@ const PLATFORM_DEPLOY_FEE_LAMPORTS = readBigIntEnv(
   BigInt(200_000_000),
 );
 
-const PLATFORM_MINT_FEE_LAMPORTS = readBigIntEnv(
-  process.env.NEXT_PUBLIC_PLATFORM_MINT_FEE_LAMPORTS,
-  BigInt(20_000_000),
-);
+const GENESIS_MINT_TAX_PCT_LABEL = `${Number(GENESIS_MINT_TAX_BPS) / 100}%`;
 
 function readBpsEnv(value: string | undefined, fallback: number): number {
   const raw = Number(value?.trim());
@@ -364,17 +367,21 @@ export function CreateLaunchForm() {
     }
   }
 
-  const { supplyNum, priceNum, totalSol, valid, policyError } = useMemo(() => {
+  const { supplyNum, priceNum, totalSol, valid, policyError, exampleGenesisTaxLamports } = useMemo(() => {
     const s = Number(supplyInput);
     const p = Number(priceInput);
     const numbersOk = Number.isFinite(s) && Number.isFinite(p);
     const err = numbersOk ? validateLaunchEconomicsInputs({ supply: s, mintPriceSol: p }) : null;
+    const v = numbersOk && !err;
+    const mpLamports = v ? mintPriceSolToLamports(p) : 0n;
+    const exampleGenesisTaxLamports = genesisMintTaxTotalLamports(mpLamports);
     return {
       supplyNum: numbersOk ? s : NaN,
       priceNum: numbersOk ? p : NaN,
       totalSol: numbersOk ? s * p : NaN,
-      valid: numbersOk && !err,
+      valid: v,
       policyError: err,
+      exampleGenesisTaxLamports,
     };
   }, [supplyInput, priceInput]);
 
@@ -685,14 +692,21 @@ export function CreateLaunchForm() {
             <p className="text-[11px] text-muted">Shown on cards · just for display</p>
           </div>
           <div className="space-y-2">
-            <FieldLabel>Mint platform fee (per NFT)</FieldLabel>
+            <FieldLabel>Genesis mint tax (minters)</FieldLabel>
             <input
               disabled
               readOnly
-              defaultValue={`${formatSol(PLATFORM_MINT_FEE_LAMPORTS)} (fixed)`}
+              value={
+                valid
+                  ? `${GENESIS_MINT_TAX_PCT_LABEL} of mint price → +${formatSol(exampleGenesisTaxLamports)} per mint`
+                  : `${GENESIS_MINT_TAX_PCT_LABEL} of mint price (matches launch-controller on-chain)`
+              }
               className="w-full cursor-not-allowed rounded-xl border border-line/60 bg-panel px-4 py-3 text-sm text-muted"
             />
-            <p className="text-[11px] text-muted">Flat fee charged to the minter on top of mint price.</p>
+            <p className="text-[11px] text-muted">
+              Minters pay mint price into the Alpha Vault plus this tax (same 700 bps as Anchor <span className="font-mono text-white/70">mint_nft</span>
+              ). The hybrid mint path sends the tax total in SOL to the platform treasury.
+            </p>
           </div>
         </div>
         <div className="space-y-2">

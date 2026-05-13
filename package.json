@@ -11,7 +11,9 @@
     "start": "next start",
     "lint": "eslint \"src/app/api/**/*.{ts,tsx}\" \"src/lib/architecture/**/*.ts\" \"src/lib/protocol/**/*.ts\" --max-warnings 0",
     "enforce:protocol": "npx tsx src/lib/protocol/validate-protocol.ts",
-    "enforce:layers": "npx tsx src/lib/protocol/validate-protocol.ts"
+    "enforce:layers": "npx tsx src/lib/protocol/validate-protocol.ts",
+    "generate:genesis": "npx tsx scripts/generate-genesis-collection.ts",
+    "generate:genesis:demo": "npx tsx scripts/generate-genesis-collection.ts --config scripts/demo-trait-config.json --out ./generated --count 3 --launch-seed demo-v1"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

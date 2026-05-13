@@ -17,11 +17,13 @@ import {
   create,
   createCollection,
   ruleSet,
+  updateV1,
 } from "@metaplex-foundation/mpl-core";
 import {
   generateSigner,
   publicKey,
   signerIdentity,
+  some,
   type Signer,
   type Umi,
 } from "@metaplex-foundation/umi";
@@ -151,4 +153,28 @@ export async function buildMintCoreAssetInstructions(
     asset: new PublicKey(assetSigner.publicKey),
     signers: [assetSigner],
   };
+}
+
+export type UpdateCoreAssetUriInput = {
+  asset: PublicKey;
+  /** Pass when the asset belongs to a verified collection (Metaplex Core update). */
+  collection?: PublicKey;
+  newUri: string;
+};
+
+/**
+ * Build instructions to update a Core asset JSON URI (e.g. reveal → pinned Arweave metadata).
+ * Authority must sign (collection update authority when asset is in a collection).
+ */
+export async function buildUpdateCoreAssetUriInstructions(
+  umi: Umi,
+  input: UpdateCoreAssetUriInput,
+): Promise<{ instructions: TransactionInstruction[]; signers: Signer[] }> {
+  const builder = updateV1(umi, {
+    asset: publicKey(input.asset.toBase58()),
+    collection: input.collection ? publicKey(input.collection.toBase58()) : undefined,
+    newUri: some(input.newUri),
+  });
+  const umiIxs = builder.getInstructions();
+  return { instructions: umiIxs.map((ix) => toWeb3JsInstruction(ix)), signers: [] };
 }

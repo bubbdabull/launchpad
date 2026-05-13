@@ -7,11 +7,12 @@ import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
 
 import { PrivyFundWalletButton } from "@/components/auth/PrivyFundWalletButton";
+import { GenesisPassInspectModal } from "@/components/genesis/GenesisPassInspectModal";
 import { useConnectFlow } from "@/lib/auth/use-connect-flow";
 import { buildAlphaVaultHybridMintTx } from "@/lib/launch/build-alpha-vault-hybrid-mint-tx";
 import { relaxedGenesisMintWithoutLifecycle } from "@/lib/launch/genesis-mint-config";
 import { canPublicMintGenesisPass } from "@/lib/launch/launch-on-chain";
-import { getPlatformMintFeeLamports } from "@/lib/launch/platform-fees";
+import { genesisMintTaxTotalLamports } from "@/lib/launch/genesis-mint-tax";
 import { sendAlphaVaultFinalFillAfterLastMint } from "@/lib/launch/send-alpha-vault-final-fill";
 import { explorerUrl } from "@/lib/solana/cluster-public";
 import { sendVersionedTransactionPreferRpc } from "@/lib/solana/send-legacy-tx-prefer-rpc";
@@ -41,11 +42,11 @@ export function GenesisPassMintPanel({ collection: c, anchorMintActive = false }
   const status = c.status;
   const isReady = !!c.coreCollection && !!c.alphaVault;
   const mintAllowed = canPublicMintGenesisPass(c) && anchorMintActive;
-  const platformFee = getPlatformMintFeeLamports();
   const showHypeCta = mintAllowed && anchorMintActive && remaining > 0;
 
   const mintPriceLamports = c.mintPriceLamports ?? BigInt(0);
-  const totalPays = mintPriceLamports + platformFee;
+  const genesisMintTax = genesisMintTaxTotalLamports(mintPriceLamports);
+  const totalPays = mintPriceLamports + genesisMintTax;
 
   const buttonLabel = useMemo(() => {
     if (phase.kind === "preparing") return "Building transaction…";
@@ -88,7 +89,23 @@ export function GenesisPassMintPanel({ collection: c, anchorMintActive = false }
     try {
       setPhase({ kind: "preparing" });
 
-      const mintOrder = c.minted + 1;
+      let mintOrder = c.minted + 1;
+      try {
+        const hintRes = await fetch(`/api/launches/${encodeURIComponent(c.slug)}/next-mint-order`);
+        if (hintRes.ok) {
+          const hint = (await hintRes.json()) as { nextMintOrder?: number; soldOut?: boolean };
+          if (typeof hint.nextMintOrder === "number" && Number.isFinite(hint.nextMintOrder) && hint.nextMintOrder > 0) {
+            mintOrder = hint.nextMintOrder;
+          }
+          if (hint.soldOut) {
+            setPhase({ kind: "error", message: "This launch is sold out (mint counter). Refresh the page if you just saw spots open." });
+            return;
+          }
+        }
+      } catch {
+        /* use client minted + 1 */
+      }
+
       const walletAdapter = wallet as unknown as Parameters<typeof buildAlphaVaultHybridMintTx>[1]["wallet"];
       const launch = c as Collection & { slug: string };
 
@@ -176,7 +193,7 @@ export function GenesisPassMintPanel({ collection: c, anchorMintActive = false }
         </p>
         {mintPriceLamports > BigInt(0) ? (
           <p className="text-[11px] text-muted">
-            + {lamportsToSolLabel(platformFee)} platform fee · total{" "}
+            + {lamportsToSolLabel(genesisMintTax)} genesis mint tax (7%) · total{" "}
             <span className="text-white">{lamportsToSolLabel(totalPays)}</span>
           </p>
         ) : null}
@@ -308,6 +325,9 @@ export function GenesisPassMintPanel({ collection: c, anchorMintActive = false }
             <p className="text-[11px] text-emerald-100/85">
               Participation receipt: on-chain asset + vault deposit. Share the tx, tag the creator, flex the pass.
             </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <GenesisPassInspectModal assetMint={phase.asset} />
+            </div>
             <div className="flex flex-wrap gap-3">
               <a href={explorerUrl("tx", phase.sig)} target="_blank" rel="noreferrer" className="font-mono underline">
                 View transaction

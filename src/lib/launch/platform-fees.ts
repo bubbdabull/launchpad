@@ -1,7 +1,6 @@
-/** Flat platform fees (lamports). Shared by mint + deploy flows. */
+/** Platform deploy fee (lamports). Genesis mint tax is %-based — see `genesis-mint-tax.ts`. */
 
 const DEFAULT_DEPLOY_FEE_LAMPORTS = 200_000_000n;
-const DEFAULT_MINT_FEE_LAMPORTS = 20_000_000n;
 
 function readLamportsEnv(publicKey: string, serverKey: string, fallback: bigint): bigint {
   const raw =
@@ -25,11 +24,3 @@ export function getPlatformDeployFeeLamports(): bigint {
   );
 }
 
-/** Read the flat per-mint platform fee from env, with a 0.02 SOL fallback. */
-export function getPlatformMintFeeLamports(): bigint {
-  return readLamportsEnv(
-    "NEXT_PUBLIC_PLATFORM_MINT_FEE_LAMPORTS",
-    "PLATFORM_MINT_FEE_LAMPORTS",
-    DEFAULT_MINT_FEE_LAMPORTS,
-  );
-}

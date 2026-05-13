@@ -2,7 +2,7 @@
  * Genesis Pass ↔ project token entitlement (product rules).
  *
  * Each launch has its own project SPL mint. On Genesis mint the buyer pays
- * (mint price → Meteora Alpha Vault quote deposit + platform fee); they receive
+ * (mint price → Meteora Alpha Vault quote deposit + genesis mint tax, 7% of mint price);
  * the Core NFT immediately but **no** project SPL in that transaction.
  *
  * Project tokens are **deferred**: buyers return later under unlock rules to

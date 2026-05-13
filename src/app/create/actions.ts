@@ -162,8 +162,7 @@ export async function createDraftCollection(
 
   const creatorTreasury = asText(form, "creatorTreasury");
   const platformTreasury = (process.env.PLATFORM_TREASURY ?? "").trim();
-  // Per-mint platform fee is a flat lamports amount sourced from
-  // PLATFORM_MINT_FEE_LAMPORTS (platform-wide), not a per-launch bps field.
+  // Genesis mint tax is 7% of mint price on-chain (launch-controller); see `genesis-mint-tax.ts`.
   // Keep the legacy column at 0 so the row remains valid.
   const platformFeeBps = 0;
 

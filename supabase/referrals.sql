@@ -8,8 +8,8 @@
 --      and write a row here keyed on (referred_wallet, slug)
 --
 -- Payouts are tracked but NOT yet automated on-chain — the v1 platform
--- captures the data and surfaces a leaderboard. Splitting the 0.02 SOL
--- platform mint fee with referrers is a follow-up wiring step in the
+-- captures the data and surfaces a leaderboard. Splitting the genesis mint tax
+-- (7% of mint price, launch-controller) with referrers is a follow-up wiring step in the
 -- mint-tx builder; the schema is ready for it (see `paid_out_lamports`).
 
 CREATE TABLE IF NOT EXISTS public.referrals (

@@ -43,6 +43,13 @@ export type HeliusAsset = {
   };
 };
 
+/** Metaplex Core collection mint for a grouped asset (DAS `grouping`). */
+export function collectionMintFromHeliusAsset(asset: HeliusAsset): string | undefined {
+  const g = asset.grouping?.find((x) => x.group_key === "collection");
+  const v = g?.group_value?.trim();
+  return v || undefined;
+}
+
 /**
  * Pull all attribute pairs out of an asset, regardless of where the indexer
  * placed them. Returns a single normalized list in `{ trait_type, value }`

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { DualMarketDiscoveryCard } from "@/components/launch/DualMarketDiscoveryCard";
+import { GenesisPassNftConfigForm } from "@/components/launch/GenesisPassNftConfigForm";
 import { LaunchSettingsForm } from "@/components/launch/LaunchSettingsForm";
 import { getWalletSession } from "@/lib/auth/session";
 import { getCollectionBySlug } from "@/lib/data/launchpad";
@@ -119,6 +120,8 @@ export default async function LaunchManagePage({ params }: PageProps) {
       {isOnChain && c.tokenMint ? <DualMarketDiscoveryCard collection={c} variant="full" /> : null}
 
       <LaunchSettingsForm collection={c} isOnChain={isOnChain} isPublished={isPublished} />
+
+      <GenesisPassNftConfigForm collection={c} />
 
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-panel/40 p-5">
         <div>

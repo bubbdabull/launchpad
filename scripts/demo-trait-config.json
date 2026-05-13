@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "width": 512,
+  "height": 512,
+  "backgroundColor": "#0b0f14",
+  "layers": [
+    {
+      "id": "background",
+      "displayName": "Background",
+      "order": 0,
+      "traits": [
+        {
+          "id": "dawn",
+          "name": "Dawn",
+          "weight": 34,
+          "file": "https://picsum.photos/seed/clgp-bg-dawn/512/512",
+          "tier": "Common"
+        },
+        {
+          "id": "dusk",
+          "name": "Dusk",
+          "weight": 33,
+          "file": "https://picsum.photos/seed/clgp-bg-dusk/512/512",
+          "tier": "Rare"
+        },
+        {
+          "id": "aurora",
+          "name": "Aurora",
+          "weight": 33,
+          "file": "https://picsum.photos/seed/clgp-bg-aur/512/512",
+          "tier": "Epic"
+        }
+      ]
+    },
+    {
+      "id": "character",
+      "displayName": "Character",
+      "order": 1,
+      "traits": [
+        {
+          "id": "voyager",
+          "name": "Voyager",
+          "weight": 34,
+          "file": "https://picsum.photos/seed/clgp-ch-voy/512/512",
+          "tier": "Common"
+        },
+        {
+          "id": "oracle",
+          "name": "Oracle",
+          "weight": 33,
+          "file": "https://picsum.photos/seed/clgp-ch-ora/512/512",
+          "tier": "Epic"
+        },
+        {
+          "id": "founder",
+          "name": "Founder",
+          "weight": 33,
+          "file": "https://picsum.photos/seed/clgp-ch-fnd/512/512",
+          "tier": "Legendary"
+        }
+      ]
+    },
+    {
+      "id": "border",
+      "displayName": "Border",
+      "order": 2,
+      "traits": [
+        {
+          "id": "etched",
+          "name": "Etched",
+          "weight": 34,
+          "file": "https://picsum.photos/seed/clgp-br-etch/512/512",
+          "tier": "Common"
+        },
+        {
+          "id": "chromed",
+          "name": "Chromed",
+          "weight": 33,
+          "file": "https://picsum.photos/seed/clgp-br-chr/512/512",
+          "tier": "Legendary"
+        },
+        {
+          "id": "monolith",
+          "name": "Monolith",
+          "weight": 33,
+          "file": "https://picsum.photos/seed/clgp-br-mon/512/512",
+          "tier": "Rare"
+        }
+      ]
+    },
+    {
+      "id": "rank",
+      "displayName": "Rank",
+      "order": 3,
+      "traits": [
+        {
+          "id": "initiate",
+          "name": "Initiate",
+          "weight": 34,
+          "file": "https://picsum.photos/seed/clgp-rk-ini/512/512",
+          "tier": "Common"
+        },
+        {
+          "id": "operator",
+          "name": "Operator",
+          "weight": 33,
+          "file": "https://picsum.photos/seed/clgp-rk-opr/512/512",
+          "tier": "Rare"
+        },
+        {
+          "id": "prime",
+          "name": "Prime",
+          "weight": 33,
+          "file": "https://picsum.photos/seed/clgp-rk-prm/512/512",
+          "tier": "Legendary"
+        }
+      ]
+    }
+  ]
+}

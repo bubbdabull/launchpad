@@ -18,8 +18,25 @@ import BN from "bn.js";
 import { Connection, Keypair, PublicKey, Transaction } from "@solana/web3.js";
 import { NATIVE_MINT, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID, getMint } from "@solana/spl-token";
 
-/** Slots ahead of "now" for pool activation — must leave room for Alpha Vault deposit window math. */
-export const POOL_ACTIVATION_SLOTS_AHEAD = 30_000;
+/** Slot delta from pool-create time to DAMM activation — drives Meteora FCFS deposit window length (see `computeFcfsVaultTiming`). */
+const DEFAULT_POOL_ACTIVATION_SLOTS_AHEAD = 5_000_000;
+
+function readPoolActivationSlotsAhead(): number {
+  const raw =
+    typeof process !== "undefined" ? process.env.NEXT_PUBLIC_POOL_ACTIVATION_SLOTS_AHEAD?.trim() : "";
+  if (raw) {
+    const n = Number.parseInt(raw, 10);
+    if (Number.isFinite(n) && n >= 30_000) return Math.min(n, 50_000_000);
+  }
+  return DEFAULT_POOL_ACTIVATION_SLOTS_AHEAD;
+}
+
+/**
+ * Slots from “now” at pool creation until DAMM activation. Larger ⇒ longer Alpha Vault DEPOSITING window
+ * (Meteora: `lastJoinPoint ≈ activation − 9750` slots, deposits from `depositingPoint` until then).
+ * Override with `NEXT_PUBLIC_POOL_ACTIVATION_SLOTS_AHEAD` (min 30_000).
+ */
+export const POOL_ACTIVATION_SLOTS_AHEAD = readPoolActivationSlotsAhead();
 
 async function fetchMintDecimals(connection: Connection, mint: PublicKey): Promise<number> {
   try {

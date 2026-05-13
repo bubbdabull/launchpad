@@ -69,7 +69,7 @@ export function computeFcfsVaultTiming(params: { activationPoint: BN; currentSlo
 
   if (depositingPoint.add(minDepositWindowSlots).gt(lastJoinPoint)) {
     throw new Error(
-      "Pool activation is too soon for a valid Alpha Vault deposit window. Increase POOL_ACTIVATION_SLOTS_AHEAD or wait and retry.",
+      "Pool activation is too soon for a valid Alpha Vault deposit window. Increase NEXT_PUBLIC_POOL_ACTIVATION_SLOTS_AHEAD (or POOL_ACTIVATION_SLOTS_AHEAD in code) or wait and retry.",
     );
   }
   if (!lastJoinPoint.gt(currentSlot)) {
