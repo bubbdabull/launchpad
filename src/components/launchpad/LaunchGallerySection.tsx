@@ -9,9 +9,11 @@ const MAX_GALLERY = 12;
 type Props = {
   galleryUrls: string[];
   setGalleryUrls: Dispatch<SetStateAction<string[]>>;
+  /** When false, hide paste-link UI (create flow). Default true. */
+  allowPasteUrl?: boolean;
 };
 
-export function LaunchGallerySection({ galleryUrls, setGalleryUrls }: Props) {
+export function LaunchGallerySection({ galleryUrls, setGalleryUrls, allowPasteUrl = true }: Props) {
   const base = useId();
   const fileId = `${base}-gallery-file`;
   const [draft, setDraft] = useState("");
@@ -60,8 +62,18 @@ export function LaunchGallerySection({ galleryUrls, setGalleryUrls }: Props) {
           Genesis Pass / collection artwork and stills — not your listing banner or token icon (those belong in Token
           metadata, not here). Uploads normalize to{" "}
           <span className="font-mono text-[10px] text-accent/90">{humanCollectionImageOutputLabel("gallery")}</span>.
-          Pasted https links are kept as provided. Up to {MAX_GALLERY} images can appear in on-chain{" "}
+          {allowPasteUrl ? (
+            <>
+              {" "}
+              Pasted https links are kept as provided. Up to {MAX_GALLERY} images can appear in on-chain{" "}
+            </>
+          ) : (
+            <> Up to {MAX_GALLERY} images can appear in on-chain </>
+          )}
           <code className="rounded bg-black/30 px-1 font-mono text-[10px]">properties.files</code>.
+          {!allowPasteUrl ? (
+            <span className="block pt-1 text-white/80">When creating a launch, add images by upload only.</span>
+          ) : null}
         </p>
       </div>
 
@@ -122,19 +134,21 @@ export function LaunchGallerySection({ galleryUrls, setGalleryUrls }: Props) {
             {uploading ? "Uploading…" : "Upload NFT art"}
           </span>
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            setPasteOpen((o) => !o);
-            setError(null);
-          }}
-          className="shrink-0 self-start rounded-full border border-transparent px-1 py-2 text-left text-xs font-medium text-accent/90 hover:text-accent sm:py-2"
-        >
-          {pasteOpen ? "Hide paste field" : "Paste https link"}
-        </button>
+        {allowPasteUrl ? (
+          <button
+            type="button"
+            onClick={() => {
+              setPasteOpen((o) => !o);
+              setError(null);
+            }}
+            className="shrink-0 self-start rounded-full border border-transparent px-1 py-2 text-left text-xs font-medium text-accent/90 hover:text-accent sm:py-2"
+          >
+            {pasteOpen ? "Hide paste field" : "Paste https link"}
+          </button>
+        ) : null}
       </div>
 
-      {pasteOpen ? (
+      {allowPasteUrl && pasteOpen ? (
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <input
             type="url"

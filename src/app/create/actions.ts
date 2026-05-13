@@ -17,6 +17,7 @@ import {
   tokenSocialLinksFromForm,
   validateTokenSocialLinks,
 } from "@/lib/launch/token-social";
+import { isCollectionAssetPublicUrl } from "@/lib/images/is-collection-asset-public-url";
 import { assertTraitCollectionConfig } from "@/lib/nft-generation/config-loader";
 import { buildCreationProtocolLayersSnapshot } from "@/lib/protocol/creation-protocol-layers";
 import { createServiceRoleClient } from "@/lib/supabase/server";
@@ -173,6 +174,15 @@ export async function createDraftCollection(
       message: "Extra artwork must be a JSON array of https image URLs (or leave it empty).",
     };
   }
+  for (const u of nftGalleryParsed) {
+    if (!isCollectionAssetPublicUrl(u)) {
+      return {
+        ok: false,
+        message:
+          "NFT art gallery must use images uploaded on this site only — remove pasted external links or re-upload those files.",
+      };
+    }
+  }
   const tokenSocial = tokenSocialLinksFromForm(form);
   const socialErr = validateTokenSocialLinks(tokenSocial);
   if (socialErr) return { ok: false, message: socialErr };
@@ -294,10 +304,17 @@ export async function createDraftCollection(
   if (!name) return { ok: false, message: "Name is required." };
   if (!description) return { ok: false, message: "Description is required." };
   if (!bannerUrl || !logoUrl) {
-    return { ok: false, message: "Add a banner and logo — upload images or paste HTTPS links." };
+    return { ok: false, message: "Upload a listing banner and token icon in step 01 (Token metadata)." };
   }
   if (!isHttpsUrl(bannerUrl) || !isHttpsUrl(logoUrl)) {
     return { ok: false, message: "Banner and logo must be full https:// URLs." };
+  }
+  if (!isCollectionAssetPublicUrl(bannerUrl) || !isCollectionAssetPublicUrl(logoUrl)) {
+    return {
+      ok: false,
+      message:
+        "Listing banner and token icon must be files uploaded on this site (use Upload in Token metadata — external image links are not accepted when creating a launch).",
+    };
   }
   if (mintPriceLamports === null) {
     return { ok: false, message: "Mint price must be a number in SOL (e.g. 0.5)." };

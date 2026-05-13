@@ -16,6 +16,7 @@ import {
   tradingTaxPctLabel,
 } from "@/lib/launch/trading-tax-protocol";
 import { HERO_LAYOUTS, isValidAccentColor } from "@/lib/launch/project-page";
+import { isCollectionAssetPublicUrl } from "@/lib/images/is-collection-asset-public-url";
 
 import { GenesisGenerativeFields } from "./GenesisGenerativeFields";
 import { LaunchMediaSection } from "./LaunchMediaSection";
@@ -272,10 +273,10 @@ export function CreateLaunchForm() {
           e.preventDefault();
           setSubmitHint(
             !l && !b
-              ? "Add token icon and listing banner in step 01 (Token metadata) — upload or paste an https:// link for each."
+              ? "Add token icon and listing banner in step 01 (Token metadata) — upload each image here."
               : !l
-                ? "Add token icon in step 01 (Token metadata)."
-                : "Add listing banner in step 01 (Token metadata).",
+                ? "Add token icon in step 01 (Token metadata) — use Upload."
+                : "Add listing banner in step 01 (Token metadata) — use Upload.",
           );
           return;
         }
@@ -283,8 +284,23 @@ export function CreateLaunchForm() {
           e.preventDefault();
           setSubmitHint(
             !/^https:\/\//i.test(l)
-              ? "Token icon in step 01 (Token metadata) must be a full https:// URL."
-              : "Listing banner in step 01 (Token metadata) must be a full https:// URL.",
+              ? "Token icon in step 01 must be uploaded (HTTPS URL from this site)."
+              : "Listing banner in step 01 must be uploaded (HTTPS URL from this site).",
+          );
+          return;
+        }
+        if (!isCollectionAssetPublicUrl(b) || !isCollectionAssetPublicUrl(l)) {
+          e.preventDefault();
+          setSubmitHint(
+            "Listing banner and token icon must be uploaded on this site in step 01 — paste links from other hosts are not accepted.",
+          );
+          return;
+        }
+        const badGallery = galleryUrls.find((u) => u.trim() && !isCollectionAssetPublicUrl(u.trim()));
+        if (badGallery) {
+          e.preventDefault();
+          setSubmitHint(
+            "NFT art in step 02 must be uploaded on this site only — remove gallery images that are not from your uploads.",
           );
           return;
         }
@@ -406,8 +422,8 @@ export function CreateLaunchForm() {
 
         <p className="text-[12px] leading-relaxed text-muted">
           <span className="font-medium text-amber-200/90">Required before publish:</span>{" "}
-          <span className="font-medium text-white/90">Token metadata</span> below — upload or paste https for both the
-          listing banner and the token icon (not Genesis Pass art; that is step 02, NFT art).
+          <span className="font-medium text-white/90">Token metadata</span> below — upload the listing banner and token
+          icon here (not Genesis Pass art; that is step 02, NFT art).
         </p>
         <LaunchMediaSection
           variant="create"

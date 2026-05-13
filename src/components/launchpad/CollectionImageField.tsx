@@ -13,6 +13,8 @@ type Props = {
   description: string;
   /** Tailwind aspect ratio for the preview frame, e.g. aspect-[21/9] */
   aspectClass: string;
+  /** When false, hide paste-link UI (create flow: uploads only). Default true. */
+  allowPasteUrl?: boolean;
   /** Controlled mode (e.g. manage page): parent owns the https URL. */
   value?: string;
   onUrlChange?: (url: string) => void;
@@ -26,6 +28,7 @@ export function CollectionImageField({
   label,
   description,
   aspectClass,
+  allowPasteUrl = true,
   value: controlledValue,
   onUrlChange,
 }: Props) {
@@ -113,7 +116,9 @@ export function CollectionImageField({
           <img src={url} alt="" className="h-full w-full object-cover" />
         </div>
       ) : (
-        <p className="text-xs text-muted">No image yet. Use upload or paste link.</p>
+        <p className="text-xs text-muted">
+          {allowPasteUrl ? "No image yet. Use upload or paste link." : "No image yet — upload a file below."}
+        </p>
       )}
 
       <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
@@ -135,16 +140,18 @@ export function CollectionImageField({
             {uploading ? "Uploading…" : uploadVerb}
           </span>
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            setPasteOpen((o) => !o);
-            setError(null);
-          }}
-          className="shrink-0 self-start rounded-full border border-transparent px-1 py-2 text-left text-xs font-medium text-accent/90 hover:text-accent sm:py-2"
-        >
-          {pasteOpen ? "Hide paste field" : "Paste https link"}
-        </button>
+        {allowPasteUrl ? (
+          <button
+            type="button"
+            onClick={() => {
+              setPasteOpen((o) => !o);
+              setError(null);
+            }}
+            className="shrink-0 self-start rounded-full border border-transparent px-1 py-2 text-left text-xs font-medium text-accent/90 hover:text-accent sm:py-2"
+          >
+            {pasteOpen ? "Hide paste field" : "Paste https link"}
+          </button>
+        ) : null}
         {url ? (
           <button
             type="button"
@@ -160,7 +167,7 @@ export function CollectionImageField({
         ) : null}
       </div>
 
-      {pasteOpen ? (
+      {allowPasteUrl && pasteOpen ? (
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <input
             type="url"

@@ -85,6 +85,7 @@ export function LaunchMediaSection({
   const bannerField = show.banner ? (
     <CollectionImageField
       name="bannerUrl"
+      allowPasteUrl={variant !== "create"}
       label={
         show.tokenMetadataCard
           ? "Listing banner"
@@ -104,6 +105,7 @@ export function LaunchMediaSection({
   const logoField = show.logo ? (
     <CollectionImageField
       name="logoUrl"
+      allowPasteUrl={variant !== "create"}
       label={
         show.tokenMetadataCard
           ? "Token icon"
@@ -153,8 +155,19 @@ export function LaunchMediaSection({
           <div>
             <h3 className="text-sm font-semibold text-white">Token metadata</h3>
             <p className="mt-1 text-[11px] leading-relaxed text-muted">
-              Banner and icon are saved on your launch and in SPL-style token metadata (explorers, wallets, this site).
-              Genesis Pass images are optional <span className="text-white/80">NFT art</span> in the next step.
+              {isCreate ? (
+                <>
+                  Upload both images here when creating a launch — external image URLs are not accepted for the banner
+                  or icon. They are saved on your launch and in SPL-style token metadata (explorers, wallets, this site).
+                  Genesis Pass images are optional <span className="text-white/80">NFT art</span> in the next step.
+                </>
+              ) : (
+                <>
+                  Banner and icon are saved on your launch and in SPL-style token metadata (explorers, wallets, this
+                  site). Genesis Pass images are optional <span className="text-white/80">NFT art</span> in the next
+                  step.
+                </>
+              )}
             </p>
           </div>
           {mediaGrid}
@@ -169,7 +182,13 @@ export function LaunchMediaSection({
         mediaGrid
       )}
 
-      {show.gallery ? <LaunchGallerySection galleryUrls={galleryUrls} setGalleryUrls={setGalleryUrls} /> : null}
+      {show.gallery ? (
+        <LaunchGallerySection
+          galleryUrls={galleryUrls}
+          setGalleryUrls={setGalleryUrls}
+          allowPasteUrl={!isCreate}
+        />
+      ) : null}
 
       {show.social ? (
         <div className="space-y-3 rounded-xl border border-line bg-panel/30 p-4">
