@@ -4,7 +4,6 @@ import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 
 import { createDraftCollection, type CreateLaunchState } from "@/app/create/actions";
 import { CreationProtocolLayersCard } from "@/components/protocol/CreationProtocolLayersCard";
-import { NftCollectionProgramLayersCard } from "@/components/protocol/NftCollectionProgramLayersCard";
 import {
   explainLaunchEconomicsError,
   LAUNCH_ECONOMICS_POLICY,
@@ -19,6 +18,7 @@ import {
 } from "@/lib/launch/trading-tax-protocol";
 import { HERO_LAYOUTS, isValidAccentColor } from "@/lib/launch/project-page";
 
+import { GenesisGenerativeFields } from "./GenesisGenerativeFields";
 import { LaunchMediaSection } from "./LaunchMediaSection";
 
 const initialState: CreateLaunchState = { ok: false };
@@ -311,7 +311,7 @@ export function CreateLaunchForm() {
       <Section
         step="01"
         title="Launch identity, listing copy & token metadata"
-        subtitle="Names, SPL symbol, listing copy, utilities, then Token metadata (banner + icon + preview + links). Genesis Pass art and variations are step 02 with their own L1–L3 program card."
+        subtitle="Names, SPL symbol, listing copy, utilities, then token metadata (banner + icon). Optional Genesis art and traits in step 02."
       >
         <div className="grid gap-5 sm:grid-cols-2">
           <div className="space-y-2">
@@ -442,13 +442,11 @@ export function CreateLaunchForm() {
       <Section
         step="02"
         title="NFT collection, art & variations"
-        subtitle="Genesis Pass lives in this app: gallery art, trait variation (JSON), reveal timing, and rarity links — with L1/L2/L3 responsibilities spelled out below, then the fields."
+        subtitle="Optional Genesis Pass art, trait-config URL, reveal timing, and rarity links."
       >
-        <NftCollectionProgramLayersCard />
-        <p className="text-[12px] leading-relaxed text-muted">
-          <span className="font-medium text-amber-200/90">Optional:</span>{" "}
-          <span className="font-medium text-white/90">NFT art</span> — pass or collection images. Required{" "}
-          <span className="font-medium text-white/90">token metadata</span> (banner + icon) is in step 01.
+        <p className="text-[11px] leading-relaxed text-muted">
+          <span className="font-medium text-amber-200/90">Optional</span> NFT art and trait links here. Token banner and
+          icon live in step 01. Mints and on-chain metadata updates use the Trade page and your wallet.
         </p>
         <LaunchMediaSection
           variant="create"
@@ -480,66 +478,7 @@ export function CreateLaunchForm() {
         />
         <input type="hidden" name="nftGalleryUrls" value={JSON.stringify(galleryUrls)} />
 
-        <div className="mt-8 space-y-4 rounded-2xl border border-white/[0.08] bg-black/25 p-5 sm:p-6">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent">Optional · generative variants</p>
-            <h3 className="mt-1 font-display text-base font-semibold text-white">Trait config &amp; rarity listings</h3>
-            <p className="mt-2 text-[11px] leading-relaxed text-muted">
-              Point <span className="font-mono text-[10px] text-white/90">trait-config.json</span> at a public https URL
-              (layers, weights, rules — see{" "}
-              <code className="rounded bg-black/40 px-1 font-mono text-[10px]">src/lib/nft-generation/schema/</code>).
-              Build assets with <span className="font-mono text-[10px] text-white/90">npm run generate:genesis</span>.
-              RareNFT / MoonRank / HowRare links are display-only for collectors.
-            </p>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <FieldLabel htmlFor="genesis-trait-uri">Trait config URI (https)</FieldLabel>
-              <input
-                id="genesis-trait-uri"
-                type="url"
-                name="genesisTraitConfigUri"
-                placeholder="https://cdn…/trait-config.json"
-                className={inputClass}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <FieldLabel htmlFor="genesis-placeholder">Placeholder image while unrevealed (https)</FieldLabel>
-              <input
-                id="genesis-placeholder"
-                type="url"
-                name="genesisPlaceholderImageUrl"
-                placeholder="https://…/hidden.png"
-                className={inputClass}
-              />
-            </div>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <FieldLabel htmlFor="genesis-reveal">Reveal at (local time, optional)</FieldLabel>
-              <input
-                id="genesis-reveal"
-                type="datetime-local"
-                name="genesisRevealAtLocal"
-                className={inputClass}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <FieldLabel htmlFor="genesis-rarity">Rarity page — RareNFT, MoonRank, HowRare… (https)</FieldLabel>
-              <input
-                id="genesis-rarity"
-                type="url"
-                name="genesisRarityListingUrl"
-                placeholder="https://rarenft… or your rankings sheet"
-                className={inputClass}
-              />
-            </div>
-          </div>
-          <label className="flex items-center gap-2 text-xs text-muted">
-            <input type="checkbox" name="genesisAllowDynamicPostReveal" value="1" className="rounded border-line" />
-            Allow dynamic metadata URL after reveal (advanced; prefer pinning for production)
-          </label>
-        </div>
+        <GenesisGenerativeFields />
       </Section>
 
       <Section

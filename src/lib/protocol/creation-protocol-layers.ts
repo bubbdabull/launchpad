@@ -28,91 +28,53 @@ export type CreationProtocolLayersSnapshot = {
   nftCollectionLayers?: CreationProtocolLayer[];
 };
 
-/** Canonical platform L1/L2/L3 (UI + DB). */
+/** Canonical platform L1/L2/L3 (stored JSON + tiny UI tiles). */
 export const CREATION_PROTOCOL_LAYERS: readonly CreationProtocolLayer[] = [
   {
     id: "L1",
-    title: "Layer 1 — On-chain protocol (authoritative)",
-    subtitle: "Solana programs + Meteora + Metaplex Core",
-    responsibilities: [
-      "Anchor launch-controller: lifecycle, receipts, claims, vesting, custody.",
-      "Meteora Alpha Vault: primary-sale deposits / raise.",
-      "Meteora DAMM v2: swaps and pool liquidity execution.",
-      "Metaplex Core: Genesis Pass identity and collection binding.",
-    ],
-    boundaries: [
-      "Ownership, allocations, claims, and phase come only from signed transactions and on-chain state.",
-      "This app and Supabase do not override program rules.",
-    ],
+    title: "L1 · On-chain",
+    subtitle: "Anchor, Meteora, Metaplex — wallets, mints, pools.",
+    responsibilities: ["Authoritative balances, phase, and claims."],
+    boundaries: ["App and DB do not override program rules."],
   },
   {
     id: "L2",
-    title: "Layer 2 — Indexer & mirrors (read-mostly)",
-    subtitle: "Helius streams, Supabase rollups, analytics",
-    responsibilities: [
-      "Ingest chain events into cache / audit tables for UX and dashboards.",
-      "Trending, volume, APR-style displays over mirrored data.",
-    ],
-    boundaries: [
-      "May rank, aggregate, and filter — must not decide payouts, claims, allocations, or lifecycle.",
-    ],
+    title: "L2 · Mirrors",
+    subtitle: "Helius + Supabase — stats and listings.",
+    responsibilities: ["Read-mostly caches and analytics for the UI."],
+    boundaries: ["Does not decide payouts or lifecycle."],
   },
   {
     id: "L3",
-    title: "Layer 3 — Product & coordination (UX)",
-    subtitle: "Next.js, wallet sessions, uploads, unsigned tx builders",
-    responsibilities: [
-      "Discovery, create launch, mint pages, metadata URIs, deploy helpers.",
-      "Build unsigned transactions from program layout — you sign with your wallet.",
-    ],
-    boundaries: [
-      "Display and coordination only — not a second source of truth for token economics.",
-    ],
+    title: "L3 · This app",
+    subtitle: "Create, mint pages, uploads, unsigned txs.",
+    responsibilities: ["You sign with your wallet; we coordinate."],
+    boundaries: ["Not a second source of truth for economics."],
   },
 ] as const;
 
-/**
- * Genesis Pass / NFT collection: variation (trait) settings and holder-facing surfaces,
- * expressed in the same L1/L2/L3 shape. Configured in this app on create / manage; L1 holds mint + metadata authority outcomes.
- */
+/** Genesis / NFT slice (audit JSON only — not shown as a wall of copy in the UI). */
 export const NFT_COLLECTION_PROGRAM_LAYERS: readonly CreationProtocolLayer[] = [
   {
     id: "L1",
-    title: "L1 — Core collection & asset truth",
-    subtitle: "Metaplex Core + SPL receipts on Solana",
-    responsibilities: [
-      "Genesis Pass collection parent + per-asset accounts: what is minted, owned, and bound to your launch.",
-      "Metadata URI updates when you reveal or refresh art (signed transactions, not this form alone).",
-      "Mint limits, price, and Alpha Vault deposits enforced by programs you deploy from the Trade page.",
-    ],
-    boundaries: [
-      "Trait rarity weights in JSON do not live on-chain as a spreadsheet — the chain stores URIs + collection wiring; your trait-config file is referenced off-chain until you commit URI changes.",
-    ],
+    title: "L1 · Core & mints",
+    subtitle: "Metaplex Core + SPL — what is minted and owned.",
+    responsibilities: ["Metadata updates when you sign reveal/deploy txs."],
+    boundaries: ["Trait JSON is off-chain until URIs are updated on-chain."],
   },
   {
     id: "L2",
-    title: "L2 — Mirrors & holder counts",
-    subtitle: "Helius DAS, Supabase rows, gallery caches",
-    responsibilities: [
-      "Holder counts, volume, and pass lists for cards and dashboards.",
-      "Cached copies of `trait-config.json` URLs, placeholder art links, and rarity listing URLs you save here.",
-    ],
-    boundaries: [
-      "Does not decide who is entitled to claims — only reflects chain + audit rows.",
-    ],
+    title: "L2 · Caches",
+    subtitle: "Holders, volume, trait-config URLs you save.",
+    responsibilities: ["Mirrors for dashboards and mint UI."],
+    boundaries: ["Does not decide claims."],
   },
   {
     id: "L3",
-    title: "L3 — All in this app (create + manage)",
-    subtitle: "Variation settings, NFT art, mint UX",
-    responsibilities: [
-      "This create flow: NFT art gallery, trait-config URI, placeholder while unrevealed, reveal schedule, rarity page link, optional dynamic URI toggle.",
-      "Manage: edit the same fields, preview endpoints, mint page — you never leave the launchpad for collection marketing setup.",
-      "Holders see mint progress, links, and generative previews here; they verify wallets and NFTs on explorers.",
-    ],
-    boundaries: [
-      "Cosmetic / metadata configuration only — no substitute for signing deploy + reveal transactions when you go live.",
-    ],
+    title: "L3 · Here",
+    subtitle: "Art, trait-config link, reveal, rarity URL in create/manage.",
+    responsibilities: ["Configure listing; Trade page for signed deploy."],
+    boundaries: ["Metadata fields are not a substitute for signing txs."],
   },
 ] as const;
 
@@ -190,10 +152,4 @@ export function parseCreationProtocolLayersSnapshot(raw: unknown): CreationProto
     layers,
     ...(nftCollectionLayers ? { nftCollectionLayers } : {}),
   };
-}
-
-/** Layers to show for the NFT / Genesis program card (stored snapshot or current canonical). */
-export function nftCollectionLayersForDisplay(snapshot: CreationProtocolLayersSnapshot | null | undefined) {
-  if (snapshot?.nftCollectionLayers?.length === 3) return snapshot.nftCollectionLayers;
-  return cloneLayers(NFT_COLLECTION_PROGRAM_LAYERS);
 }

@@ -7,7 +7,6 @@ import {
   updateGenesisPassNftConfig,
   type GenesisPassManageState,
 } from "@/app/project/[slug]/manage/genesis-pass-actions";
-import { NftCollectionProgramLayersCard } from "@/components/protocol/NftCollectionProgramLayersCard";
 import type { Collection } from "@/types/collection";
 
 function toDatetimeLocalValue(iso: string | undefined): string {
@@ -50,10 +49,6 @@ export function GenesisPassNftConfigForm({ collection: c }: { collection: Collec
             MoonRank, HowRare, or your own rankings page — mint/launch pages show it as a link only.
           </p>
         </div>
-      </div>
-
-      <div className="mt-6">
-        <NftCollectionProgramLayersCard snapshot={c.creationProtocolLayers ?? null} variant="full" preSubmitFooter={false} />
       </div>
 
       {state.message ? (
