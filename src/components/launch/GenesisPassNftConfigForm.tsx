@@ -200,8 +200,8 @@ export function GenesisPassNftConfigForm({ collection: c }: { collection: Collec
             Replace traits with a built-in preset
           </label>
           <p className="text-[10px] leading-relaxed">
-            Three weighted layers, images from this site. Choosing a preset ignores the JSON box on submit. Requires{" "}
-            <span className="font-mono text-[10px] text-white/80">NEXT_PUBLIC_APP_URL</span>.
+            Three weighted layers with images served from this app. Choosing a preset ignores the JSON box on submit. If
+            save fails, the deployment may not know its public URL yet — use custom JSON or ask your host to fix that.
           </p>
           <select
             id={`apply-preset-${c.slug}`}

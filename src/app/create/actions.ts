@@ -140,7 +140,7 @@ function parseGenesisPassConfigForCreate(
       return {
         ok: false,
         message:
-          "Set NEXT_PUBLIC_APP_URL (your public site URL) to use a built-in trait preset, or paste custom JSON instead.",
+          "Built-in presets need this app’s public web address to build image links. Use custom trait JSON for now, or ask whoever deploys this app to set its canonical site URL.",
       };
     }
     next.traitConfig = buildGenesisBuiltinTraitConfig(traitPreset, publicOrigin);

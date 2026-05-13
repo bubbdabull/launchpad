@@ -127,9 +127,10 @@ export function GenesisGenerativeFields() {
             className="mt-0.5"
           />
           <span>
-            <span className="font-medium text-white/90">Built-in preset</span> — choose a look below; three layers,
-            on-site artwork, rarity-style tiers in metadata. Requires{" "}
-            <span className="font-mono text-[10px] text-white/80">NEXT_PUBLIC_APP_URL</span> on the server.
+            <span className="font-medium text-white/90">Built-in preset</span> — pick a look below. We host the
+            layer images on this app and roll weighted traits for you. This only works when the app knows its own public
+            web address (your live deployment); if saving fails, use custom JSON or ask whoever runs this site to check
+            hosting settings.
           </span>
         </label>
         {traitMode === "builtin" ? (
