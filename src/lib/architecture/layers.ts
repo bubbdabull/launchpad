@@ -39,10 +39,9 @@ export const L2_ALLOWED_MODULE_PREFIXES = [
   "lib/referrals/",
 ] as const;
 
-/** Modules that are pure UX, auth servers, AI, metadata helpers, uploads. */
+/** Modules that are pure UX, auth servers, metadata helpers, uploads. */
 export const L3_ALLOWED_MODULE_PREFIXES = [
   "lib/auth/",
-  "lib/ai/",
   "lib/metadata/",
   "lib/security/",
   "lib/creators/",

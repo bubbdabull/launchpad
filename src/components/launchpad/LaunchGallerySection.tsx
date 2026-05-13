@@ -7,28 +7,13 @@ const MAX_GALLERY = 12;
 type Props = {
   galleryUrls: string[];
   setGalleryUrls: Dispatch<SetStateAction<string[]>>;
-  aiLaunchName: string;
-  aiTagline: string;
-  aiDescription: string;
-  aiStyleHint: string;
-  /** When false, still allow upload / paste; AI buttons stay disabled. */
-  aiEnabled?: boolean;
 };
 
-export function LaunchGallerySection({
-  galleryUrls,
-  setGalleryUrls,
-  aiLaunchName,
-  aiTagline,
-  aiDescription,
-  aiStyleHint,
-  aiEnabled = true,
-}: Props) {
+export function LaunchGallerySection({ galleryUrls, setGalleryUrls }: Props) {
   const base = useId();
   const fileId = `${base}-gallery-file`;
   const [draft, setDraft] = useState("");
   const [uploading, setUploading] = useState(false);
-  const [aiBusy, setAiBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pasteOpen, setPasteOpen] = useState(false);
 
@@ -52,57 +37,6 @@ export function LaunchGallerySection({
     [setGalleryUrls],
   );
 
-  const uploadFile = useCallback(
-    async (file: File) => {
-      setError(null);
-      setUploading(true);
-      try {
-        await pushUploadedFile(file);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Upload failed.");
-      } finally {
-        setUploading(false);
-      }
-    },
-    [pushUploadedFile],
-  );
-
-  async function runAiGallery() {
-    if (!aiLaunchName.trim()) {
-      setError("Add a launch name first.");
-      return;
-    }
-    if (galleryUrls.length >= MAX_GALLERY) return;
-    setError(null);
-    setAiBusy(true);
-    try {
-      const res = await fetch("/api/ai/generate-launch-image", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          kind: "gallery",
-          launchName: aiLaunchName.trim(),
-          tagline: aiTagline.trim(),
-          description: aiDescription.trim(),
-          styleHint: aiStyleHint.trim(),
-        }),
-      });
-      const data = (await res.json()) as { ok?: boolean; publicUrl?: string; message?: string };
-      const publicUrl = data.publicUrl;
-      if (!res.ok || !data.ok || !publicUrl) {
-        throw new Error(data.message ?? "AI image failed.");
-      }
-      setGalleryUrls((prev) => {
-        if (prev.includes(publicUrl) || prev.length >= MAX_GALLERY) return prev;
-        return [...prev, publicUrl];
-      });
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "AI image failed.");
-    } finally {
-      setAiBusy(false);
-    }
-  }
-
   function addDraftUrl() {
     setError(null);
     const u = draft.trim();
@@ -121,8 +55,8 @@ export function LaunchGallerySection({
       <div>
         <h3 className="text-sm font-semibold text-white">Gallery &amp; extras</h3>
         <p className="mt-1 text-[11px] leading-relaxed text-muted">
-          Uploads are converted to PNG; large images are shrunk so the long edge is at most 1600px (no upscaling). Optional https links still work.
-          Up to {MAX_GALLERY} images go into on-chain metadata{" "}
+          Uploads are converted to PNG; large images are shrunk so the long edge is at most 1600px (no upscaling). Optional
+          https links still work. Up to {MAX_GALLERY} images go into on-chain metadata{" "}
           <code className="rounded bg-black/30 px-1 font-mono text-[10px]">properties.files</code>.
         </p>
       </div>
@@ -182,14 +116,6 @@ export function LaunchGallerySection({
             })();
           }}
         />
-        <button
-          type="button"
-          disabled={!aiEnabled || aiBusy || !aiLaunchName.trim() || galleryUrls.length >= MAX_GALLERY}
-          onClick={() => void runAiGallery()}
-          className="rounded-full border border-accent/40 bg-accent/10 px-4 py-2 text-xs font-semibold text-accent hover:bg-accent/15 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {aiBusy ? "Generating…" : "AI gallery image"}
-        </button>
         <button
           type="button"
           onClick={() => {

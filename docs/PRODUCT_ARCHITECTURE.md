@@ -81,7 +81,6 @@ Legend: **✔ allowed** (fits layer 2/3). **⚠ scope note** (allowed but not L1
 | `GET /api/ecosystem/signals-methodology` | 3 | **✔** Static methodology copy. |
 | `GET/POST /api/metadata/*` | 2→3 | **✔** Metadata read/serve for UX. |
 | `POST /api/upload/collection-asset` | 3 | **✔** Asset storage (non-financial). |
-| `POST /api/ai/*` | 3 | **✔** Copy / image assist; **must not** be used as on-chain entitlement. |
 | `POST /api/store/checkout` | 3 | **⚠** **Fiat storefront** order + inventory in **USD cents**; commerce math, **not** Genesis Pass allocation (separate domain from L1 token economics). |
 | `GET/POST /api/referrals/*` | 2→3 | **✔** Attribution / leaderboard reads; `record` inserts referral row from mint + session (marketing analytics, not on-chain allocation). |
 | `GET/POST /api/auth/*` | 3 | **✔** Sessions / identity. |
@@ -91,12 +90,6 @@ Legend: **✔ allowed** (fits layer 2/3). **⚠ scope note** (allowed but not L1
 | `GET /api/metadata/asset/[address]` | 2→3 | **✔** Asset metadata for display. |
 | `GET /api/metadata/collection/[slug]` | 2→3 | **✔** Collection JSON for display. |
 | `GET /api/metadata/token/[slug]` | 2→3 | **✔** Token metadata for display. |
-| `POST /api/upload/collection-asset` | 3 | **✔** Upload to storage. |
-| `POST /api/ai/launch-assist` | 3 | **✔** Structured suggestions for form fields. |
-| `POST /api/ai/enrich-metadata-field` | 3 | **✔** Copy assist. |
-| `POST /api/ai/enrich-token-metadata` | 3 | **✔** Copy assist. |
-| `POST /api/ai/generate-full-project` | 3 | **✔** Form fill assist. |
-| `POST /api/ai/generate-launch-image` | 3 | **✔** Image assist. |
 | `GET/POST /api/auth/siws/*` | 3 | **✔** Wallet session (SIWS). |
 | `GET/POST /api/auth/siwe/*` | 3 | **✔** SIWE (EVM) session hooks if used. |
 | `GET/POST /api/auth/privy/*` | 3 | **✔** Privy session bridge. |

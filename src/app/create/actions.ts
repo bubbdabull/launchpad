@@ -161,7 +161,11 @@ export async function createDraftCollection(
   }
 
   const creatorTreasury = asText(form, "creatorTreasury");
-  const platformTreasury = (process.env.PLATFORM_TREASURY ?? "").trim();
+  const platformTreasury = (
+    process.env.PLATFORM_TREASURY ??
+    process.env.NEXT_PUBLIC_PLATFORM_TREASURY ??
+    ""
+  ).trim();
   // Genesis mint tax is 7% of mint price on-chain (launch-controller); see `genesis-mint-tax.ts`.
   // Keep the legacy column at 0 so the row remains valid.
   const platformFeeBps = 0;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 
 import { createDraftCollection, type CreateLaunchState } from "@/app/create/actions";
 import { ProtocolLayersHint } from "@/components/protocol/ProtocolLayersHint";
@@ -19,7 +19,7 @@ import {
 import { HERO_LAYOUTS, isValidAccentColor } from "@/lib/launch/project-page";
 import { serializeTokenMetadataProfile, type TokenMetadataProfile } from "@/lib/launch/token-metadata-profile";
 
-import { LaunchArtStudio } from "./LaunchArtStudio";
+import { LaunchMediaSection } from "./LaunchMediaSection";
 
 const initialState: CreateLaunchState = { ok: false };
 
@@ -119,6 +119,9 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
 const inputClass =
   "w-full rounded-xl border border-line bg-ink px-4 py-3 text-sm text-white placeholder:text-muted/60";
 
+const SLUG_FIELD_RE = /^[a-z0-9-]{3,64}$/;
+const TOKEN_SYMBOL_FIELD_RE = /^[A-Z0-9]{2,10}$/;
+
 function slugify(name: string): string {
   return name
     .toLowerCase()
@@ -176,7 +179,6 @@ export function CreateLaunchForm() {
   const [socialTwitter, setSocialTwitter] = useState("");
   const [socialDiscord, setSocialDiscord] = useState("");
   const [socialTelegram, setSocialTelegram] = useState("");
-  const [imageStyleHint, setImageStyleHint] = useState("");
 
   const [projectAccentColor, setProjectAccentColor] = useState("");
   const [projectHeroLayout, setProjectHeroLayout] = useState<string>("classic");
@@ -223,11 +225,48 @@ export function CreateLaunchForm() {
 
   const tradingSplitDisplay = useMemo(() => splitCreatorLegForDisplay(holderRewardPct), [holderRewardPct]);
 
+  const publishFormValid = useMemo(() => {
+    if (!valid) return false;
+    const slugNorm = slug.trim().toLowerCase();
+    if (!SLUG_FIELD_RE.test(slugNorm)) return false;
+    if (!TOKEN_SYMBOL_FIELD_RE.test(tokenSymbol.trim().toUpperCase())) return false;
+    return true;
+  }, [valid, slug, tokenSymbol]);
+
+  const footerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (state.message && !state.ok && footerRef.current) {
+      footerRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
+  }, [state.message, state.ok]);
+
   return (
     <form
       action={action}
       className="space-y-8"
       onSubmit={(e) => {
+        if (!valid) {
+          e.preventDefault();
+          setSubmitHint(
+            policyError
+              ? explainLaunchEconomicsError(policyError)
+              : "Enter a valid NFT supply and mint price (see step 04 bounds).",
+          );
+          return;
+        }
+        const slugNorm = slug.trim().toLowerCase();
+        if (!SLUG_FIELD_RE.test(slugNorm)) {
+          e.preventDefault();
+          setSubmitHint("Slug must be 3–64 characters: lowercase letters, numbers, and hyphens only.");
+          return;
+        }
+        const sym = tokenSymbol.trim().toUpperCase();
+        if (!TOKEN_SYMBOL_FIELD_RE.test(sym)) {
+          e.preventDefault();
+          setSubmitHint("Token symbol must be 2–10 letters or numbers (A–Z / 0–9).");
+          return;
+        }
         const b = bannerUrl.trim();
         const l = logoUrl.trim();
         if (!b || !l) {
@@ -398,13 +437,8 @@ export function CreateLaunchForm() {
           predictable dimensions. <span className="font-medium text-white/90">Gallery</span> is optional extra art on
           /project.
         </p>
-        <LaunchArtStudio
+        <LaunchMediaSection
           variant="create"
-          name={name}
-          tagline={tagline}
-          description={description}
-          styleHint={imageStyleHint}
-          onStyleHintChange={setImageStyleHint}
           galleryUrls={galleryUrls}
           setGalleryUrls={setGalleryUrls}
           bannerUrl={bannerUrl}
@@ -899,7 +933,7 @@ export function CreateLaunchForm() {
         </label>
       </Section>
 
-      <div className="rounded-2xl border border-white/[0.06] bg-panel/50 p-5">
+      <div ref={footerRef} className="rounded-2xl border border-white/[0.06] bg-panel/50 p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-[10px] uppercase tracking-wider text-muted">Platform deploy fee (display)</p>
@@ -913,7 +947,12 @@ export function CreateLaunchForm() {
           </div>
           <button
             type="submit"
-            disabled={pending}
+            disabled={pending || !publishFormValid}
+            title={
+              !publishFormValid
+                ? "Fix supply × price (step 04), slug (3–64, a–z 0–9 -), and token symbol (2–10) before publishing."
+                : undefined
+            }
             className="inline-flex w-full shrink-0 items-center justify-center rounded-full bg-accent px-10 py-3.5 text-sm font-semibold text-ink shadow-[0_0_32px_rgba(200,255,0,0.15)] transition hover:brightness-110 disabled:opacity-60 sm:w-auto"
           >
             {pending ? "Publishing…" : "Publish launch"}

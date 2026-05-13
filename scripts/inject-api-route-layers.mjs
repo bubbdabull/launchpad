@@ -28,11 +28,6 @@ const LAYER_BY_FILE = {
 
   "src/app/api/launches/[slug]/reward-holders/route.ts": "L3",
   "src/app/api/admin/verify-creator/route.ts": "L3",
-  "src/app/api/ai/enrich-metadata-field/route.ts": "L3",
-  "src/app/api/ai/launch-assist/route.ts": "L3",
-  "src/app/api/ai/generate-full-project/route.ts": "L3",
-  "src/app/api/ai/generate-launch-image/route.ts": "L3",
-  "src/app/api/ai/enrich-token-metadata/route.ts": "L3",
   "src/app/api/upload/collection-asset/route.ts": "L3",
   "src/app/api/metadata/asset/[address]/route.ts": "L3",
   "src/app/api/metadata/collection/[slug]/route.ts": "L3",

@@ -1,7 +1,6 @@
 "use client";
 
 import type { Dispatch, SetStateAction } from "react";
-import { useState } from "react";
 
 import type { PairedNftEntry, TokenMetadataProfile } from "@/lib/launch/token-metadata-profile";
 
@@ -12,11 +11,6 @@ type Variant = "create" | "manage";
 
 type Props = {
   variant: Variant;
-  name: string;
-  tagline: string;
-  description: string;
-  styleHint: string;
-  onStyleHintChange: (v: string) => void;
   galleryUrls: string[];
   setGalleryUrls: Dispatch<SetStateAction<string[]>>;
   bannerUrl: string;
@@ -35,13 +29,8 @@ type Props = {
   onSocialTelegram: (v: string) => void;
 };
 
-export function LaunchArtStudio({
+export function LaunchMediaSection({
   variant,
-  name,
-  tagline,
-  description,
-  styleHint,
-  onStyleHintChange,
   galleryUrls,
   setGalleryUrls,
   bannerUrl,
@@ -59,163 +48,7 @@ export function LaunchArtStudio({
   onSocialDiscord,
   onSocialTelegram,
 }: Props) {
-  const [studioMsg, setStudioMsg] = useState<string | null>(null);
-  const [genAllBusy, setGenAllBusy] = useState(false);
-  const [enrichBusy, setEnrichBusy] = useState(false);
-  const [aiFieldBusy, setAiFieldBusy] = useState<"story" | "roadmap" | "community" | null>(null);
-
   const isCreate = variant === "create";
-
-  async function runEnrichCopy() {
-    if (!name.trim()) {
-      setStudioMsg("Add a launch name first.");
-      return;
-    }
-    if (!description.trim()) {
-      setStudioMsg("Add a main description first.");
-      return;
-    }
-    setEnrichBusy(true);
-    setStudioMsg(null);
-    try {
-      const res = await fetch("/api/ai/enrich-token-metadata", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          launchName: name.trim(),
-          tagline: tagline.trim(),
-          description: description.trim(),
-          styleHint: styleHint.trim(),
-        }),
-      });
-      const data = (await res.json()) as {
-        ok?: boolean;
-        data?: { story: string; roadmap: string; community: string };
-        message?: string;
-      };
-      if (!res.ok || !data.ok || !data.data) {
-        throw new Error(data.message ?? "AI copy failed.");
-      }
-      onMetaProfileChange({
-        ...metaProfile,
-        story: data.data.story,
-        roadmap: data.data.roadmap,
-        community: data.data.community,
-      });
-      setStudioMsg("Draft story, roadmap, and community sections are ready — edit before saving.");
-    } catch (e) {
-      setStudioMsg(e instanceof Error ? e.message : "AI copy failed.");
-    } finally {
-      setEnrichBusy(false);
-    }
-  }
-
-  function otherSectionsForField(field: "story" | "roadmap" | "community"): string {
-    const parts: string[] = [];
-    if (field !== "story" && metaProfile.story?.trim()) parts.push(`Story:\n${metaProfile.story.trim()}`);
-    if (field !== "roadmap" && metaProfile.roadmap?.trim()) parts.push(`Roadmap:\n${metaProfile.roadmap.trim()}`);
-    if (field !== "community" && metaProfile.community?.trim()) {
-      parts.push(`Community:\n${metaProfile.community.trim()}`);
-    }
-    return parts.join("\n\n");
-  }
-
-  async function runEnrichField(field: "story" | "roadmap" | "community") {
-    if (!name.trim()) {
-      setStudioMsg("Add a launch name first.");
-      return;
-    }
-    if (!description.trim()) {
-      setStudioMsg("Add a main description first.");
-      return;
-    }
-    setAiFieldBusy(field);
-    setStudioMsg(null);
-    try {
-      const existingDraft =
-        field === "story"
-          ? (metaProfile.story ?? "")
-          : field === "roadmap"
-            ? (metaProfile.roadmap ?? "")
-            : (metaProfile.community ?? "");
-      const res = await fetch("/api/ai/enrich-metadata-field", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          field,
-          launchName: name.trim(),
-          tagline: tagline.trim(),
-          description: description.trim(),
-          styleHint: styleHint.trim(),
-          existingDraft,
-          otherSections: otherSectionsForField(field),
-        }),
-      });
-      const data = (await res.json()) as { ok?: boolean; data?: { text: string }; message?: string };
-      if (!res.ok || !data.ok || !data.data?.text) {
-        throw new Error(data.message ?? "AI draft failed.");
-      }
-      const next = { ...metaProfile };
-      if (field === "story") next.story = data.data.text;
-      if (field === "roadmap") next.roadmap = data.data.text;
-      if (field === "community") next.community = data.data.text;
-      onMetaProfileChange(next);
-      setStudioMsg(`Draft ${field} updated — review before saving.`);
-    } catch (e) {
-      setStudioMsg(e instanceof Error ? e.message : "AI draft failed.");
-    } finally {
-      setAiFieldBusy(null);
-    }
-  }
-
-  async function runGenerateAllArt() {
-    if (!name.trim()) {
-      setStudioMsg("Add a launch name first.");
-      return;
-    }
-    setGenAllBusy(true);
-    setStudioMsg(null);
-    try {
-      const payload = (kind: string) => ({
-        kind,
-        launchName: name.trim(),
-        tagline: tagline.trim(),
-        description: description.trim(),
-        styleHint: styleHint.trim(),
-      });
-      const genOne = async (kind: string) => {
-        const res = await fetch("/api/ai/generate-launch-image", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(payload(kind)),
-        });
-        const data = (await res.json()) as { ok?: boolean; publicUrl?: string; message?: string };
-        if (!res.ok || !data.ok || !data.publicUrl) {
-          throw new Error(data.message ?? `${kind} generation failed`);
-        }
-        return data.publicUrl;
-      };
-
-      const b = await genOne("banner");
-      onBannerUrlChange(b);
-      const l = await genOne("logo");
-      onLogoUrlChange(l);
-      if (galleryUrls.length < 12) {
-        const g = await genOne("gallery");
-        setGalleryUrls((prev) => {
-          if (prev.includes(g) || prev.length >= 12) return prev;
-          return [...prev, g];
-        });
-      }
-      setStudioMsg("Generated banner, logo, and one gallery still — review before publishing.");
-    } catch (e) {
-      setStudioMsg(e instanceof Error ? e.message : "Batch art generation stopped.");
-    } finally {
-      setGenAllBusy(false);
-    }
-  }
-
-  const busy = genAllBusy || enrichBusy || aiFieldBusy !== null;
 
   const pairedList: PairedNftEntry[] = metaProfile.pairedNfts?.length
     ? metaProfile.pairedNfts
@@ -241,49 +74,10 @@ export function LaunchArtStudio({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border border-accent/20 bg-accent/[0.04] p-4">
-        <h3 className="text-sm font-semibold text-white">Launch art studio</h3>
-        <p className="mt-1 text-[11px] leading-relaxed text-muted">
-          Upload banner, logo, and gallery images — they&apos;re saved with your launch and get stable{" "}
-          <span className="text-white/80">https://</span> URLs for your launch and on-chain metadata. Use{" "}
-          <span className="text-white/80">Generate with AI</span> on any slot for DALL·E 3 art saved the same way. You
-          can still paste external links if something already lives on a CDN.
-        </p>
-        <div className="mt-3 space-y-1">
-          <label className="text-[10px] uppercase tracking-wider text-muted">Style hint (all AI generations)</label>
-          <input
-            value={styleHint}
-            onChange={(e) => onStyleHintChange(e.target.value)}
-            placeholder="e.g. vaporwave, cel-shaded anime, gritty sci-fi poster…"
-            className="w-full rounded-xl border border-line bg-ink px-4 py-3 text-sm text-white placeholder:text-muted/60"
-          />
-        </div>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => void runGenerateAllArt()}
-            className="rounded-full border border-accent/40 bg-accent/10 px-4 py-2 text-xs font-semibold text-accent transition hover:bg-accent/15 disabled:opacity-50"
-          >
-            {genAllBusy ? "Generating art…" : "Generate all art (banner + logo + gallery)"}
-          </button>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => void runEnrichCopy()}
-            className="rounded-full border border-white/15 bg-white/[0.04] px-4 py-2 text-xs font-semibold text-white/90 transition hover:bg-white/[0.07] disabled:opacity-50"
-          >
-            {enrichBusy ? "Drafting copy…" : "Draft explorer copy (story + roadmap + community)"}
-          </button>
-        </div>
-        {studioMsg ? (
-          <p className="mt-2 text-[11px] leading-relaxed text-muted">
-            <span className={studioMsg.includes("failed") || studioMsg.includes("stopped") ? "text-rose-300" : "text-emerald-200/90"}>
-              {studioMsg}
-            </span>
-          </p>
-        ) : null}
-      </div>
+      <p className="text-[12px] leading-relaxed text-muted">
+        Upload or paste <span className="text-white/85">https://</span> images. Files are optimized to stable URLs for
+        Metaplex metadata and the site.
+      </p>
 
       <div className="grid gap-8 lg:grid-cols-2">
         <CollectionImageField
@@ -291,10 +85,6 @@ export function LaunchArtStudio({
           label="Banner"
           description="Wide hero (~3:1). Uploads are cropped and saved as 1920×640 PNG for consistent wallet + indexer previews."
           aspectClass="aspect-[21/9] min-h-[140px]"
-          aiLaunchName={name}
-          aiTagline={tagline}
-          aiDescription={description}
-          aiStyleHint={styleHint}
           value={bannerUrl}
           onUrlChange={onBannerUrlChange}
         />
@@ -303,34 +93,20 @@ export function LaunchArtStudio({
           label="Logo / avatar"
           description="Square mark for cards and DEX icons. Uploads are cropped and saved as 512×512 PNG."
           aspectClass="aspect-square max-w-[280px]"
-          aiLaunchName={name}
-          aiTagline={tagline}
-          aiDescription={description}
-          aiStyleHint={styleHint}
           value={logoUrl}
           onUrlChange={onLogoUrlChange}
         />
       </div>
 
-      <LaunchGallerySection
-        galleryUrls={galleryUrls}
-        setGalleryUrls={setGalleryUrls}
-        aiLaunchName={name}
-        aiTagline={tagline}
-        aiDescription={description}
-        aiStyleHint={styleHint}
-        aiEnabled={Boolean(name.trim())}
-      />
+      <LaunchGallerySection galleryUrls={galleryUrls} setGalleryUrls={setGalleryUrls} />
 
       <div className="space-y-4 rounded-xl border border-line bg-ink/30 p-4">
         <div className="max-w-3xl space-y-2">
           <h4 className="text-sm font-semibold text-white">Rich metadata for explorers</h4>
           <p className="text-[11px] leading-relaxed text-muted">
             Optional sections below are appended after your main pitch inside the same{" "}
-            <span className="text-white/85">description</span> field on-chain JSON — so DEXScreener, wallets, and indexers
-            can show a fuller narrative without replacing your step-01 description. Use{" "}
-            <span className="text-white/85">AI write</span> on each block, or{" "}
-            <span className="text-white/85">Draft explorer copy</span> above to fill all three at once.
+            <span className="text-white/85">description</span> field on-chain JSON — so DEXScreener, wallets, and
+            indexers can show a fuller narrative without replacing your main description.
           </p>
           <ul className="list-inside list-disc space-y-1 text-[11px] leading-relaxed text-muted marker:text-accent/80">
             <li>
@@ -355,27 +131,18 @@ export function LaunchArtStudio({
             hint="Lore, world, why this drop exists…"
             value={metaProfile.story ?? ""}
             onChange={(v) => onMetaProfileChange({ ...metaProfile, story: v })}
-            onAi={() => void runEnrichField("story")}
-            aiBusy={aiFieldBusy === "story"}
-            disabled={busy}
           />
           <RichTextBlock
             label="Roadmap"
             hint="Phases, milestones, what ships after graduation…"
             value={metaProfile.roadmap ?? ""}
             onChange={(v) => onMetaProfileChange({ ...metaProfile, roadmap: v })}
-            onAi={() => void runEnrichField("roadmap")}
-            aiBusy={aiFieldBusy === "roadmap"}
-            disabled={busy}
           />
           <RichTextBlock
             label="Community"
             hint="Holder perks, events, how to plug in…"
             value={metaProfile.community ?? ""}
             onChange={(v) => onMetaProfileChange({ ...metaProfile, community: v })}
-            onAi={() => void runEnrichField("community")}
-            aiBusy={aiFieldBusy === "community"}
-            disabled={busy}
           />
         </div>
 
@@ -546,31 +313,15 @@ function RichTextBlock({
   hint,
   value,
   onChange,
-  onAi,
-  aiBusy,
-  disabled,
 }: {
   label: string;
   hint: string;
   value: string;
   onChange: (v: string) => void;
-  onAi: () => void;
-  aiBusy: boolean;
-  disabled: boolean;
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-[10px] uppercase tracking-wider text-muted">{label}</span>
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={onAi}
-          className="rounded-full border border-accent/35 bg-accent/10 px-2.5 py-1 text-[10px] font-semibold text-accent transition hover:bg-accent/15 disabled:opacity-50"
-        >
-          {aiBusy ? "Writing…" : "AI write"}
-        </button>
-      </div>
+      <span className="text-[10px] uppercase tracking-wider text-muted">{label}</span>
       <p className="text-[10px] leading-snug text-muted/90">{hint}</p>
       <textarea
         rows={5}

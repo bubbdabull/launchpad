@@ -8,13 +8,8 @@ type Props = {
   name: FieldName;
   label: string;
   description: string;
-  /** Tailwind aspect ratio e.g. aspect-[21:9] */
+  /** Tailwind aspect ratio e.g. aspect-[21/9] */
   aspectClass: string;
-  /** When set with `aiLaunchName`, shows a “Generate with AI” action (DALL·E 3 → your Supabase bucket). */
-  aiLaunchName?: string;
-  aiTagline?: string;
-  aiDescription?: string;
-  aiStyleHint?: string;
   /** Controlled mode (e.g. manage page): parent owns the https URL. */
   value?: string;
   onUrlChange?: (url: string) => void;
@@ -25,10 +20,6 @@ export function CollectionImageField({
   label,
   description,
   aspectClass,
-  aiLaunchName,
-  aiTagline,
-  aiDescription,
-  aiStyleHint,
   value: controlledValue,
   onUrlChange,
 }: Props) {
@@ -48,12 +39,8 @@ export function CollectionImageField({
   const fileInputId = `${base}-file`;
   const pasteInputId = `${base}-paste`;
   const [uploading, setUploading] = useState(false);
-  const [aiBusy, setAiBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pasteMode, setPasteMode] = useState(false);
-
-  const aiKind = name === "bannerUrl" ? "banner" : "logo";
-  const showAi = Boolean(aiLaunchName?.trim());
 
   const uploadFile = useCallback(
     async (file: File) => {
@@ -79,39 +66,6 @@ export function CollectionImageField({
     [name, setUrl],
   );
 
-  async function runAiGenerate() {
-    if (!aiLaunchName?.trim()) {
-      setError("Add a launch name first.");
-      return;
-    }
-    setError(null);
-    setAiBusy(true);
-    try {
-      const res = await fetch("/api/ai/generate-launch-image", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          kind: aiKind,
-          launchName: aiLaunchName.trim(),
-          tagline: aiTagline?.trim() ?? "",
-          description: aiDescription?.trim() ?? "",
-          styleHint: aiStyleHint?.trim() ?? "",
-        }),
-      });
-      const data = (await res.json()) as { ok?: boolean; publicUrl?: string; message?: string };
-      const publicUrl = data.publicUrl;
-      if (!res.ok || !data.ok || !publicUrl) {
-        throw new Error(data.message ?? "AI image failed.");
-      }
-      setUrl(publicUrl);
-      setPasteMode(false);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "AI image failed.");
-    } finally {
-      setAiBusy(false);
-    }
-  }
-
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-end justify-between gap-2">
@@ -122,16 +76,6 @@ export function CollectionImageField({
           <p className="mt-0.5 text-xs text-muted">{description}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {showAi ? (
-            <button
-              type="button"
-              disabled={aiBusy || uploading}
-              onClick={() => void runAiGenerate()}
-              className="text-xs font-medium text-accent/90 hover:text-accent disabled:opacity-50"
-            >
-              {aiBusy ? "Generating…" : "Generate with AI"}
-            </button>
-          ) : null}
           <button
             type="button"
             onClick={() => {

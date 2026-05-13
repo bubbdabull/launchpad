@@ -8,7 +8,7 @@ import {
   updateLaunchSettings,
   type LaunchManageState,
 } from "@/app/project/[slug]/manage/actions";
-import { LaunchArtStudio } from "@/components/launchpad/LaunchArtStudio";
+import { LaunchMediaSection } from "@/components/launchpad/LaunchMediaSection";
 import { serializeTokenMetadataProfile, type TokenMetadataProfile } from "@/lib/launch/token-metadata-profile";
 import type { Collection } from "@/types/collection";
 
@@ -58,7 +58,6 @@ export function LaunchSettingsForm({
   const [socialTwitter, setSocialTwitter] = useState(c.tokenSocialLinks?.twitter ?? "");
   const [socialDiscord, setSocialDiscord] = useState(c.tokenSocialLinks?.discord ?? "");
   const [socialTelegram, setSocialTelegram] = useState(c.tokenSocialLinks?.telegram ?? "");
-  const [manageStyleHint, setManageStyleHint] = useState("");
   const [metaProfile, setMetaProfile] = useState<TokenMetadataProfile>(() => ({
     ...(c.tokenMetadataProfile ?? {}),
   }));
@@ -125,13 +124,8 @@ export function LaunchSettingsForm({
               className="w-full rounded-lg border border-line bg-ink px-3 py-2 text-sm text-white outline-none ring-accent/30 focus:ring-2"
             />
           </Field>
-          <LaunchArtStudio
+          <LaunchMediaSection
             variant="manage"
-            name={name}
-            tagline={tagline}
-            description={description}
-            styleHint={manageStyleHint}
-            onStyleHintChange={setManageStyleHint}
             galleryUrls={galleryUrls}
             setGalleryUrls={setGalleryUrls}
             bannerUrl={bannerUrl}
