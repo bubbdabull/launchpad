@@ -9,6 +9,8 @@ import {
   type LaunchManageState,
 } from "@/app/project/[slug]/manage/actions";
 import { LaunchMediaSection } from "@/components/launchpad/LaunchMediaSection";
+import { CreationProtocolLayersCard } from "@/components/protocol/CreationProtocolLayersCard";
+import { NftCollectionProgramLayersCard } from "@/components/protocol/NftCollectionProgramLayersCard";
 import { serializeTokenMetadataProfile } from "@/lib/launch/token-metadata-profile";
 import type { Collection } from "@/types/collection";
 
@@ -103,6 +105,8 @@ export function LaunchSettingsForm({
             title="Public-facing details"
             sub="Shown on the home grid, project page, and trade page."
           />
+          <CreationProtocolLayersCard snapshot={c.creationProtocolLayers ?? null} variant="full" preSubmitFooter={false} />
+          <NftCollectionProgramLayersCard snapshot={c.creationProtocolLayers ?? null} variant="full" preSubmitFooter={false} />
           <Field label="Name" maxLength={96}>
             <input
               name="name"
@@ -132,13 +136,15 @@ export function LaunchSettingsForm({
           </Field>
           <LaunchMediaSection
             variant="manage"
-            parts={{ intro: false }}
+            parts={{ intro: false, tokenMetadataCard: true }}
             galleryUrls={galleryUrls}
             setGalleryUrls={setGalleryUrls}
             bannerUrl={bannerUrl}
             logoUrl={logoUrl}
             onBannerUrlChange={setBannerUrl}
             onLogoUrlChange={setLogoUrl}
+            previewTokenSymbol={c.tokenSymbol ?? ""}
+            previewDisplayName={name}
             socialWebsite={socialWebsite}
             socialTwitter={socialTwitter}
             socialDiscord={socialDiscord}

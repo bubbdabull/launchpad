@@ -1,8 +1,11 @@
 import type { MintTier } from "@/lib/launch/mint-tiers";
 import type { ProjectPageDoc } from "@/lib/launch/project-page";
 import type { GenesisPassNftConfig } from "@/types/genesis-pass-nft";
+import type { CreationProtocolLayersSnapshot } from "@/lib/protocol/creation-protocol-layers";
 import type { TokenMetadataProfile } from "@/lib/launch/token-metadata-profile";
 import type { TokenSocialLinks } from "@/lib/launch/token-social";
+
+export type { CreationProtocolLayersSnapshot } from "@/lib/protocol/creation-protocol-layers";
 
 export type { MintTier } from "@/lib/launch/mint-tiers";
 export type { TokenMetadataProfile } from "@/lib/launch/token-metadata-profile";
@@ -150,4 +153,11 @@ export type Collection = {
   projectHeadline?: string | null;
   /** Optional subhead that overrides `tagline` on the project page. */
   projectSubhead?: string | null;
+
+  /**
+   * Snapshot of L1/L2/L3 programs stored when the draft was inserted (Supabase).
+   * `creation-program/2` adds `nftCollectionLayers` for Genesis / variation / holder UX.
+   * Disclosure / audit only — not a substitute for on-chain state.
+   */
+  creationProtocolLayers?: CreationProtocolLayersSnapshot | null;
 };

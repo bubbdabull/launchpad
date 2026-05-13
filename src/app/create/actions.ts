@@ -17,6 +17,7 @@ import {
   tokenSocialLinksFromForm,
   validateTokenSocialLinks,
 } from "@/lib/launch/token-social";
+import { buildCreationProtocolLayersSnapshot } from "@/lib/protocol/creation-protocol-layers";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import type { GenesisPassNftConfig } from "@/types/genesis-pass-nft";
 
@@ -315,6 +316,8 @@ export async function createDraftCollection(
   const genesisParsed = parseGenesisPassConfigForCreate(form);
   if (!genesisParsed.ok) return { ok: false, message: genesisParsed.message };
 
+  const creationProtocolLayers = buildCreationProtocolLayersSnapshot();
+
   const supabase = createServiceRoleClient();
   const { error } = await supabase.from("collections").insert({
     slug,
@@ -366,6 +369,7 @@ export async function createDraftCollection(
     project_headline: projectHeadlineRaw || null,
     project_subhead: projectSubheadRaw || null,
     genesis_pass_config: genesisParsed.value,
+    creation_protocol_layers: creationProtocolLayers,
   });
 
   if (error) return { ok: false, message: error.message };

@@ -57,8 +57,8 @@ export function LaunchGallerySection({ galleryUrls, setGalleryUrls }: Props) {
       <div>
         <h3 className="text-sm font-semibold text-white">NFT art</h3>
         <p className="mt-1 text-[11px] leading-relaxed text-muted">
-          Genesis Pass / collection artwork and stills (not the token logo or banner — those are metadata images above).
-          Uploads normalize to{" "}
+          Genesis Pass / collection artwork and stills — not your listing banner or token icon (those belong in Token
+          metadata, not here). Uploads normalize to{" "}
           <span className="font-mono text-[10px] text-accent/90">{humanCollectionImageOutputLabel("gallery")}</span>.
           Pasted https links are kept as provided. Up to {MAX_GALLERY} images can appear in on-chain{" "}
           <code className="rounded bg-black/30 px-1 font-mono text-[10px]">properties.files</code>.

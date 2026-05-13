@@ -6,6 +6,7 @@ import {
 } from "@/lib/launch/token-metadata-profile";
 import type { TokenSocialLinks } from "@/lib/launch/token-social";
 import type { TraitCollectionConfig } from "@/lib/nft-generation/types";
+import { parseCreationProtocolLayersSnapshot } from "@/lib/protocol/creation-protocol-layers";
 import type { ChainId, Collection, MintStatus } from "@/types/collection";
 import type { GenesisPassNftConfig } from "@/types/genesis-pass-nft";
 
@@ -86,6 +87,8 @@ export type CollectionRow = {
   token_metadata_profile?: unknown;
   /** Optional generative Genesis Pass config (JSON). */
   genesis_pass_config?: unknown;
+  /** L1/L2/L3 creation program snapshot at draft insert (JSON). */
+  creation_protocol_layers?: unknown;
 };
 
 function asChainId(_v: string): ChainId {
@@ -111,6 +114,11 @@ function asHttpsStringArray(v: unknown): string[] | undefined {
     if (/^https:\/\/.+/i.test(s)) out.push(s);
   }
   return out.length ? out : undefined;
+}
+
+function asCreationProtocolLayers(v: unknown) {
+  const parsed = parseCreationProtocolLayersSnapshot(v);
+  return parsed ?? undefined;
 }
 
 function asTokenMetadataProfile(v: unknown): TokenMetadataProfile | undefined {
@@ -264,5 +272,6 @@ export function rowToCollection(row: CollectionRow): Collection {
     projectHeadline: row.project_headline ?? null,
     projectSubhead: row.project_subhead ?? null,
     genesisPassNft: asGenesisPassNftConfig(row.genesis_pass_config),
+    creationProtocolLayers: asCreationProtocolLayers(row.creation_protocol_layers) ?? null,
   };
 }

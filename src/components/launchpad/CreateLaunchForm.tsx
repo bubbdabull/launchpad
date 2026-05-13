@@ -3,7 +3,8 @@
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 
 import { createDraftCollection, type CreateLaunchState } from "@/app/create/actions";
-import { ProtocolLayersHint } from "@/components/protocol/ProtocolLayersHint";
+import { CreationProtocolLayersCard } from "@/components/protocol/CreationProtocolLayersCard";
+import { NftCollectionProgramLayersCard } from "@/components/protocol/NftCollectionProgramLayersCard";
 import {
   explainLaunchEconomicsError,
   LAUNCH_ECONOMICS_POLICY,
@@ -272,10 +273,10 @@ export function CreateLaunchForm() {
           e.preventDefault();
           setSubmitHint(
             !l && !b
-              ? "Add a token logo (metadata, step 01) and a banner (metadata, step 02) — upload or paste an https:// link for each."
+              ? "Add token icon and listing banner in step 01 (Token metadata) — upload or paste an https:// link for each."
               : !l
-                ? "Add a token logo (metadata) in step 01 (upload or https link)."
-                : "Add a banner (metadata) in step 02 (upload or https link).",
+                ? "Add token icon in step 01 (Token metadata)."
+                : "Add listing banner in step 01 (Token metadata).",
           );
           return;
         }
@@ -283,8 +284,8 @@ export function CreateLaunchForm() {
           e.preventDefault();
           setSubmitHint(
             !/^https:\/\//i.test(l)
-              ? "Token logo (metadata) in step 01 must be a full https:// URL."
-              : "Banner (metadata) in step 02 must be a full https:// URL.",
+              ? "Token icon in step 01 (Token metadata) must be a full https:// URL."
+              : "Listing banner in step 01 (Token metadata) must be a full https:// URL.",
           );
           return;
         }
@@ -304,13 +305,13 @@ export function CreateLaunchForm() {
         title="How this works"
         subtitle="This form saves your launch listing. Mint limits, pricing, and trading behavior are enforced on-chain when you deploy from your launch’s trade page—not by this form alone."
       >
-        <ProtocolLayersHint />
+        <CreationProtocolLayersCard />
       </Section>
 
       <Section
         step="01"
-        title="Launch identity, token & wallet metadata"
-        subtitle="Names, SPL symbol, listing copy, the token logo (SPL / explorer metadata — not pass artwork), and optional links for wallets and explorers. NFT / pass images go under NFT art in step 02."
+        title="Launch identity, listing copy & token metadata"
+        subtitle="Names, SPL symbol, listing copy, utilities, then Token metadata (banner + icon + preview + links). Genesis Pass art and variations are step 02 with their own L1–L3 program card."
       >
         <div className="grid gap-5 sm:grid-cols-2">
           <div className="space-y-2">
@@ -403,16 +404,17 @@ export function CreateLaunchForm() {
 
         <p className="text-[12px] leading-relaxed text-muted">
           <span className="font-medium text-amber-200/90">Required before publish:</span>{" "}
-          <span className="font-medium text-white/90">Token logo (metadata)</span> below — SPL / listing icon, not your
-          Genesis Pass art (that is step 02, NFT art). Same URL is stored for Metaplex token / collection metadata.
+          <span className="font-medium text-white/90">Token metadata</span> below — upload or paste https for both the
+          listing banner and the token icon (not Genesis Pass art; that is step 02, NFT art).
         </p>
         <LaunchMediaSection
           variant="create"
           parts={{
             intro: false,
-            banner: false,
-            gallery: false,
+            tokenMetadataCard: true,
+            banner: true,
             logo: true,
+            gallery: false,
             social: true,
           }}
           galleryUrls={galleryUrls}
@@ -421,6 +423,8 @@ export function CreateLaunchForm() {
           logoUrl={logoUrl}
           onBannerUrlChange={setBannerUrl}
           onLogoUrlChange={setLogoUrl}
+          previewTokenSymbol={tokenSymbol}
+          previewDisplayName={tokenName.trim() || name.trim() || undefined}
           socialWebsite={socialWebsite}
           socialTwitter={socialTwitter}
           socialDiscord={socialDiscord}
@@ -437,23 +441,25 @@ export function CreateLaunchForm() {
 
       <Section
         step="02"
-        title="Metadata banner, NFT art & generative"
-        subtitle="Banner is for token and listing metadata (same family as the token logo in step 01). Upload Genesis Pass / collection art under NFT art. Optional trait-config / rarity URLs follow."
+        title="NFT collection, art & variations"
+        subtitle="Genesis Pass lives in this app: gallery art, trait variation (JSON), reveal timing, and rarity links — with L1/L2/L3 responsibilities spelled out below, then the fields."
       >
+        <NftCollectionProgramLayersCard />
         <p className="text-[12px] leading-relaxed text-muted">
-          <span className="font-medium text-amber-200/90">Required before publish:</span>{" "}
-          <span className="font-medium text-white/90">Banner (metadata)</span> below — not pass artwork. Token logo
-          (metadata) is in step 01; optional <span className="font-medium text-white/90">NFT art</span> is in this step.
+          <span className="font-medium text-amber-200/90">Optional:</span>{" "}
+          <span className="font-medium text-white/90">NFT art</span> — pass or collection images. Required{" "}
+          <span className="font-medium text-white/90">token metadata</span> (banner + icon) is in step 01.
         </p>
         <LaunchMediaSection
           variant="create"
-          introText="Banner = token / site metadata (wallets, explorers, listings). NFT art = your Genesis Pass or collection images — separate uploads below."
+          introText="These uploads are for Genesis Pass or collection artwork only. Your DEXScreener-style banner and token icon live under Token metadata in step 01."
           parts={{
             intro: true,
-            banner: true,
+            banner: false,
             gallery: true,
             logo: false,
             social: false,
+            tokenMetadataCard: false,
           }}
           galleryUrls={galleryUrls}
           setGalleryUrls={setGalleryUrls}

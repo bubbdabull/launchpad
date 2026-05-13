@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
-import { ProtocolLayersHint } from "@/components/protocol/ProtocolLayersHint";
 import { DualMarketDiscoveryCard } from "@/components/launch/DualMarketDiscoveryCard";
 import { GenesisPassNftConfigForm } from "@/components/launch/GenesisPassNftConfigForm";
 import { LaunchSettingsForm } from "@/components/launch/LaunchSettingsForm";
@@ -55,7 +54,6 @@ export default async function LaunchManagePage({ params }: PageProps) {
           Deploy on-chain, tune the Genesis Pass, and control visibility. The public project page is
           defined when you create the launch (headline, story, art, and links).
         </p>
-        <ProtocolLayersHint className="mt-4 max-w-2xl" />
       </header>
 
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
