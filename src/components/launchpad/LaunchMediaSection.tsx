@@ -101,7 +101,7 @@ export function LaunchMediaSection({
               label={tokenLogoOnly ? "Token logo (metadata)" : "Logo / avatar (metadata)"}
               description={
                 tokenLogoOnly
-                  ? "Square icon for the SPL token in wallets, explorers, and DEX metadata. Pass / trait artwork goes under NFT art in the next step."
+                  ? "Square icon for SPL token and explorer metadata only. Genesis Pass artwork goes in step 02 under NFT art."
                   : "Square mark for cards, mint UI, and token / collection metadata (center-cropped). Pass artwork belongs under NFT art when that section is shown."
               }
               aspectClass="aspect-square max-w-[280px]"

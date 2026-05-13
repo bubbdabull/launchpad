@@ -88,17 +88,22 @@ export function CollectionImageField({
   }
 
   const pillBtn =
-    "cursor-pointer rounded-full border border-line bg-panel px-4 py-2 text-xs font-semibold text-white transition hover:border-white/25";
+    "inline-flex items-center justify-center rounded-full border border-line bg-panel px-4 py-2 text-xs font-semibold text-white transition hover:border-white/25";
+
+  const uploadVerb = url ? "Replace image" : "Upload image";
 
   return (
     <div className="space-y-4 rounded-xl border border-line bg-panel/30 p-4">
       <div>
         <h3 className="text-sm font-semibold text-white">{label}</h3>
         <p className="mt-1 text-[11px] leading-relaxed text-muted">{description}</p>
-        <p className="mt-1.5 text-[10px] leading-relaxed text-muted/90">
-          Server output: <span className="font-mono text-[10px] text-accent/90">{outputLabel}</span> · JPG, PNG, WebP,
-          or GIF · up to 5&nbsp;MB source
-        </p>
+        <div className="mt-2 space-y-1 text-[10px] leading-snug text-muted/90">
+          <p>
+            <span className="text-muted">Normalized for metadata:</span>{" "}
+            <span className="font-mono text-[10px] text-accent/90">{outputLabel}</span>
+          </p>
+          <p className="text-muted/85">Source: JPEG, PNG, WebP, or GIF · up to 5&nbsp;MB</p>
+        </div>
       </div>
 
       {url ? (
@@ -108,37 +113,37 @@ export function CollectionImageField({
           <img src={url} alt="" className="h-full w-full object-cover" />
         </div>
       ) : (
-        <p className="text-xs text-muted">No image yet — upload a file or paste an https link.</p>
+        <p className="text-xs text-muted">No image yet. Use upload or paste link.</p>
       )}
 
-      <div className="flex flex-wrap items-center gap-2">
-        <label
-          htmlFor={fileId}
-          className={`${pillBtn} ${uploading ? "pointer-events-none opacity-50" : ""}`}
-        >
-          {uploading ? "Uploading…" : url ? "Replace file" : "Upload file"}
-        </label>
-        <input
-          id={fileId}
-          type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif"
-          className="sr-only"
-          disabled={uploading}
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) void uploadFile(f);
-            e.target.value = "";
-          }}
-        />
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+        <div className={`relative inline-flex shrink-0 self-start ${uploading ? "pointer-events-none opacity-50" : ""}`}>
+          <input
+            id={fileId}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            aria-label={uploadVerb}
+            className="absolute inset-0 z-10 h-full min-h-[2.5rem] w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
+            disabled={uploading}
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) void uploadFile(f);
+              e.target.value = "";
+            }}
+          />
+          <span className={`${pillBtn} pointer-events-none min-h-[2.5rem] px-5`}>
+            {uploading ? "Uploading…" : uploadVerb}
+          </span>
+        </div>
         <button
           type="button"
           onClick={() => {
             setPasteOpen((o) => !o);
             setError(null);
           }}
-          className="text-xs font-medium text-accent/90 hover:text-accent"
+          className="shrink-0 self-start rounded-full border border-transparent px-1 py-2 text-left text-xs font-medium text-accent/90 hover:text-accent sm:py-2"
         >
-          {pasteOpen ? "Hide link field" : "Paste image link"}
+          {pasteOpen ? "Hide paste field" : "Paste https link"}
         </button>
         {url ? (
           <button
@@ -148,7 +153,7 @@ export function CollectionImageField({
               setDraft("");
               setError(null);
             }}
-            className="text-xs font-medium text-rose-300/90 hover:text-rose-200"
+            className="shrink-0 self-start rounded-full border border-transparent px-1 py-2 text-left text-xs font-medium text-rose-300/90 hover:text-rose-200 sm:py-2"
           >
             Remove
           </button>

@@ -86,49 +86,51 @@ export function LaunchGallerySection({ galleryUrls, setGalleryUrls }: Props) {
         </ul>
       ) : null}
 
-      <div className="flex flex-wrap items-center gap-2">
-        <label
-          htmlFor={fileId}
-          className={`cursor-pointer rounded-full border border-line bg-panel px-4 py-2 text-xs font-semibold text-white hover:border-white/25 ${
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+        <div
+          className={`relative inline-flex shrink-0 self-start ${
             uploading || galleryUrls.length >= MAX_GALLERY ? "pointer-events-none opacity-50" : ""
           }`}
         >
-          {uploading ? "Uploading…" : "Upload NFT art"}
-        </label>
-        <input
-          id={fileId}
-          type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif"
-          multiple
-          className="sr-only"
-          disabled={uploading || galleryUrls.length >= MAX_GALLERY}
-          onChange={(e) => {
-            const files = Array.from(e.target.files ?? []);
-            e.target.value = "";
-            void (async () => {
-              setError(null);
-              setUploading(true);
-              try {
-                for (const f of files) {
-                  await pushUploadedFile(f);
+          <input
+            id={fileId}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            multiple
+            aria-label="Upload NFT art files"
+            className="absolute inset-0 z-10 h-full min-h-[2.5rem] w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
+            disabled={uploading || galleryUrls.length >= MAX_GALLERY}
+            onChange={(e) => {
+              const files = Array.from(e.target.files ?? []);
+              e.target.value = "";
+              void (async () => {
+                setError(null);
+                setUploading(true);
+                try {
+                  for (const f of files) {
+                    await pushUploadedFile(f);
+                  }
+                } catch (err) {
+                  setError(err instanceof Error ? err.message : "Upload failed.");
+                } finally {
+                  setUploading(false);
                 }
-              } catch (err) {
-                setError(err instanceof Error ? err.message : "Upload failed.");
-              } finally {
-                setUploading(false);
-              }
-            })();
-          }}
-        />
+              })();
+            }}
+          />
+          <span className="pointer-events-none inline-flex min-h-[2.5rem] items-center justify-center rounded-full border border-line bg-panel px-5 text-xs font-semibold text-white transition hover:border-white/25">
+            {uploading ? "Uploading…" : "Upload NFT art"}
+          </span>
+        </div>
         <button
           type="button"
           onClick={() => {
             setPasteOpen((o) => !o);
             setError(null);
           }}
-          className="text-xs font-medium text-accent/90 hover:text-accent"
+          className="shrink-0 self-start rounded-full border border-transparent px-1 py-2 text-left text-xs font-medium text-accent/90 hover:text-accent sm:py-2"
         >
-          {pasteOpen ? "Hide link field" : "Paste image link"}
+          {pasteOpen ? "Hide paste field" : "Paste https link"}
         </button>
       </div>
 
