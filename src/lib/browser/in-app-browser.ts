@@ -5,14 +5,19 @@
 
 export type InAppBrowserHint = "social-or-webview" | null;
 
+/** Broad mobile / tablet UA check (Safari, Chrome, in-app). */
+export function isMobileDeviceUserAgent(userAgent: string | undefined): boolean {
+  if (!userAgent) return false;
+  return /android|iphone|ipad|ipod|mobile/i.test(userAgent);
+}
+
 /** UA substring checks — keep conservative to avoid annoying real browsers. */
 export function detectMobileInAppBrowserHint(userAgent: string | undefined): InAppBrowserHint {
   if (!userAgent) return null;
   const ua = userAgent;
   const u = ua.toLowerCase();
 
-  const isMobile = /android|iphone|ipad|ipod|mobile/i.test(ua);
-  if (!isMobile) return null;
+  if (!isMobileDeviceUserAgent(ua)) return null;
 
   // Android System WebView (many in-app browsers, including some wallet flows)
   if (u.includes("; wv)") || u.includes("webview")) return "social-or-webview";

@@ -81,7 +81,7 @@ export function CollectionImageField({
 
   async function runAiGenerate() {
     if (!aiLaunchName?.trim()) {
-      setError("Add a launch name in step 01 first.");
+      setError("Add a launch name first.");
       return;
     }
     setError(null);

@@ -34,7 +34,8 @@ export const LAUNCH_STATE_VALUES: readonly LaunchState[] = [
  */
 export const L1_ECONOMIC_MODEL = {
   alphaVault: "Deposit entry primitive only (raise path).",
-  dammV2: "Liquidity + trading venue; trading fees accrue per program / pool rules on-chain.",
+  dammV2:
+    "Meteora DAMM v2 pool (customizable + Alpha Vault handoff). Pool create uses isLockLiquidity (permanentLockPosition) so seeded LP is locked; deploy revokes SPL mint authority after vault (1B fixed). Launch-controller taxes DAMM swaps at 300 bps per monetization.rs.",
   coreNfts: "Identity + entitlement anchor; claim paths bind to receipts + LaunchState on-chain.",
 } as const;
 

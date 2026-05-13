@@ -72,7 +72,7 @@ export function LaunchArtStudio({
       return;
     }
     if (!description.trim()) {
-      setStudioMsg("Add a main description in step 01 first.");
+      setStudioMsg("Add a main description first.");
       return;
     }
     setEnrichBusy(true);
@@ -126,7 +126,7 @@ export function LaunchArtStudio({
       return;
     }
     if (!description.trim()) {
-      setStudioMsg("Add a main description in step 01 first.");
+      setStudioMsg("Add a main description first.");
       return;
     }
     setAiFieldBusy(field);

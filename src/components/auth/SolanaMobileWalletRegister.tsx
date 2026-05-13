@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 import {
   createDefaultAuthorizationCache,
   createDefaultChainSelector,
@@ -20,7 +20,7 @@ const MIN_PNG_ICON =
  * (association / local wallet discovery). Safe no-op on unsupported browsers.
  */
 export function SolanaMobileWalletRegister() {
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (typeof window === "undefined") return;
     const cluster = getPublicCluster();
     const chains =

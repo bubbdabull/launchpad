@@ -610,6 +610,15 @@ export function DeployOnChainPanel({ collection: c }: Props) {
                     records the same 1B economics including Slice B ({sliceSummary.sliceBPct}% reserve, creator{" "}
                     {sliceSummary.creatorOfB}% of that reserve).
                   </p>
+                  <div className="rounded-lg border border-emerald-400/25 bg-emerald-400/[0.06] px-3 py-2 text-[11px] leading-relaxed text-muted">
+                    <p className="font-medium text-emerald-200/95">Supply &amp; locked pool liquidity</p>
+                    <p className="mt-1">
+                      <strong className="text-white/90">Mint authority is revoked</strong> after the vault step so the
+                      1B project token supply is fixed forever — no hidden mints. The DAMM v2 pool transaction includes
+                      Meteora&apos;s <strong className="text-white/90">permanent liquidity lock</strong> on the opening
+                      position — seeded LP cannot be withdrawn from that position later.
+                    </p>
+                  </div>
                   <div className="rounded-lg border border-line/70 bg-black/25 px-3 py-2 text-[11px] text-muted">
                     <p className="font-medium text-white/90">1B split (from launch settings)</p>
                     <p className="mt-1">

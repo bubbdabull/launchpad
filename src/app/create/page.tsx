@@ -42,8 +42,8 @@ export default async function CreatePage() {
           Launch a collection
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
-          Pair a Genesis Pass with a token raise and on-chain deploy steps. Connect your wallet to publish and upload
-          assets.
+          Publish your launch row, add https art for Metaplex metadata, then deploy Alpha Vault + Core collection on the
+          trade page. On-chain rules always win.
         </p>
       </header>
 
@@ -91,7 +91,7 @@ export default async function CreatePage() {
                       Mint
                     </Link>
                     <Link href={`/launch/${d.slug}`} className="font-medium text-accent hover:underline">
-                      Curve
+                      Trade
                     </Link>
                   </div>
                 </div>

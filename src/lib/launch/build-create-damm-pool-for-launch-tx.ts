@@ -1,7 +1,8 @@
 /**
  * Meteora DAMM v2 customizable pool with hasAlphaVault=true (slot activation).
  * Token A = project SPL, token B = wrapped SOL (Meteora Alpha Vault expects `baseMint`/`quoteMint` to match A/B).
- * Seed liquidity must be funded by the payer wallet.
+ * Seed liquidity must be funded by the payer wallet. **All initial position liquidity is permanently
+ * locked** (`isLockLiquidity: true` → Meteora `permanentLockPosition` appended to the pool transaction).
  */
 
 import {
@@ -87,7 +88,8 @@ export type BuildCreateDammPoolParams = {
 };
 
 /**
- * Builds `initializeCustomizablePool` with `hasAlphaVault: true` and slot-based activation.
+ * Builds `initializeCustomizablePool` with `hasAlphaVault: true`, slot-based activation, and permanent
+ * liquidity lock on the opening position (Meteora DAMM v2).
  */
 export async function buildCreateDammV2PoolWithAlphaVaultTx(
   connection: Connection,
@@ -166,6 +168,8 @@ export async function buildCreateDammV2PoolWithAlphaVaultTx(
     activationType: ActivationType.Slot,
     tokenAProgram,
     tokenBProgram,
+    /** Seeded LP is non-withdrawable from this position — enforced by Meteora in the same signature as pool init. */
+    isLockLiquidity: true,
   });
 
   const expectedPool = predictCustomPoolAddress(params.projectMint);
