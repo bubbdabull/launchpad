@@ -2,8 +2,10 @@ import type { Wallet } from "@wallet-standard/base";
 
 /**
  * Privy often lists the embedded "Privy" Solana wallet before linked externals
- * (Jupiter, Phantom, …). Prefer the first non-embedded wallet when multiple exist
- * so signing + `useWallet()` align with the wallet the user actually uses.
+ * (Phantom, etc.). Prefer the first non-embedded wallet when multiple exist
+ * so signing matches the wallet the user picked.
+ *
+ * Keep in sync with server `pickSolanaAddress` in `privy-server.ts`.
  */
 export function pickPrimaryPrivySolanaWallet<
   T extends { address: string; standardWallet: Wallet },

@@ -102,7 +102,6 @@ export async function GET() {
 
   const distsBySlug = new Map<string, DistributionRow[]>();
   const referralsBySlug = new Map<string, ReferralRow[]>();
-  const productsBySlug = new Map<string, { total: number; active: number }>();
 
   if (slugs.length > 0) {
     const { data: dists } = await supabase
@@ -129,18 +128,6 @@ export async function GET() {
       const list = referralsBySlug.get(r.collection_slug) ?? [];
       list.push(r);
       referralsBySlug.set(r.collection_slug, list);
-    }
-
-    // Storefront product counts (active + total) for the manage badges.
-    const { data: prods } = await supabase
-      .from("products")
-      .select("collection_slug, active")
-      .in("collection_slug", slugs);
-    for (const p of (prods ?? []) as { collection_slug: string; active: boolean }[]) {
-      const cur = productsBySlug.get(p.collection_slug) ?? { total: 0, active: 0 };
-      cur.total += 1;
-      if (p.active) cur.active += 1;
-      productsBySlug.set(p.collection_slug, cur);
     }
   }
 
@@ -198,8 +185,6 @@ export async function GET() {
       aprWeightWeight += l.minted ?? 0;
     }
 
-    const productCount = productsBySlug.get(l.slug) ?? { total: 0, active: 0 };
-
     return {
       slug: l.slug,
       name: l.name,
@@ -225,8 +210,6 @@ export async function GET() {
       distributionCount,
       referralCount: refs.length,
       referralVolumeLamports: refVolume.toString(),
-      productCountTotal: productCount.total,
-      productCountActive: productCount.active,
     };
   });
 

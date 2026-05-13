@@ -266,7 +266,7 @@ export function CreatorMarketChrome({ featured, collections, platformStats, chil
           <MotionSection className="mt-12">
             <div className="mb-4 flex flex-col gap-1">
               <h3 className="font-display text-lg font-semibold text-white">High signal</h3>
-              <p className="text-xs text-muted">Reputation + holder snapshots (indexer mirror)</p>
+              <p className="text-xs text-muted">Sorted for discovery—not who gets paid.</p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {highSignal.map((c) => (

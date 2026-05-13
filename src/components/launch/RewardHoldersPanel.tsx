@@ -8,8 +8,8 @@ import type { Collection } from "@/types/collection";
 type Props = { collection: Collection };
 
 /**
- * Server-side token holder batching was removed. SPL rewards must flow through
- * on-chain claim / stream programs; the backend never plans allocations.
+ * Server-side token holder batching was removed. Rewards to holders go through
+ * Solana the way your launch is set up—not from a batch button here.
  */
 export function RewardHoldersPanel({ collection: c }: Props) {
   const wallet = useWallet();
@@ -20,13 +20,10 @@ export function RewardHoldersPanel({ collection: c }: Props) {
   return (
     <section className="rounded-2xl border border-line bg-panel/40 p-6">
       <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">Token rewards</p>
-      <h2 className="mt-1 font-display text-lg font-semibold text-white">On-chain claims only</h2>
+      <h2 className="mt-1 font-display text-lg font-semibold text-white">Paying holders</h2>
       <p className="mt-2 text-sm leading-relaxed text-muted">
-        Per-holder token splits are no longer previewed or executed from this app. Wire the Anchor claim program and
-        sign <code className="rounded bg-black/30 px-1 font-mono text-[11px]">claim</code> / stream instructions from
-        the client. The API route{" "}
-        <code className="rounded bg-black/30 px-1 font-mono text-[11px]">/api/launches/…/reward-holders</code> is
-        disabled (410) so the server cannot assign token amounts.
+        Sending tokens to holders happens on Solana after you set that up. This page won&apos;t run those payments for
+        you.
       </p>
     </section>
   );

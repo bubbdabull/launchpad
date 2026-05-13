@@ -110,9 +110,6 @@ export type Collection = {
    */
   mintTiers?: MintTier[];
 
-  /** Populated on home grid when the collection has at least one active store product. */
-  hasStorefront?: boolean;
-
   /** ISO timestamp the launch went live (status -> 'live'). */
   launchedAt?: string;
   /** Cached "implied 7d APR" %, populated from /api/launches/[slug]/yield. */

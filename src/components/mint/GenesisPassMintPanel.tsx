@@ -73,7 +73,7 @@ export function GenesisPassMintPanel({ collection: c, anchorMintActive = false }
       setPhase({
         kind: "error",
         message:
-          "Mint is not available (sold out, off-chain wiring incomplete, or Anchor lifecycle is still before MINT_ACTIVE).",
+          "Mint isn&apos;t ready (sold out, deploy not finished, or mint not open yet).",
       });
       return;
     }
@@ -81,7 +81,7 @@ export function GenesisPassMintPanel({ collection: c, anchorMintActive = false }
       setPhase({
         kind: "error",
         message:
-          "This launch hasn’t finished its on-chain setup. The creator must link a Meteora Alpha Vault and a Metaplex Core Genesis Pass collection before mints work.",
+          "This launch isn&apos;t set up yet. The creator has to finish deploy so the vault and collection are linked.",
       });
       return;
     }
@@ -193,23 +193,20 @@ export function GenesisPassMintPanel({ collection: c, anchorMintActive = false }
         </p>
         {mintPriceLamports > BigInt(0) ? (
           <p className="text-[11px] text-muted">
-            + {lamportsToSolLabel(genesisMintTax)} genesis mint tax (7%) · total{" "}
-            <span className="text-white">{lamportsToSolLabel(totalPays)}</span>
+            + {lamportsToSolLabel(genesisMintTax)} small mint fee (7%) · you pay{" "}
+            <span className="text-white">{lamportsToSolLabel(totalPays)}</span> total
           </p>
         ) : null}
       </div>
 
       <div className="space-y-2 rounded-xl border border-line bg-panel/40 p-4 text-xs">
-        <p className="text-[10px] uppercase tracking-wider text-muted">Transaction preview (human-readable)</p>
+        <p className="text-[10px] uppercase tracking-wider text-muted">What this mint does</p>
         <ul className="space-y-1.5 text-white/80">
-          <li>1. Your quote hits the Meteora Alpha Vault — same numbers as the card.</li>
-          <li>2. Core mints your Genesis Pass #{c.minted + 1} — your on-chain receipt.</li>
-          <li>3. Pass stores vault route + order — provable, not vibes.</li>
-          <li className="text-white/65">
-            Token liquidity is a separate leg; you&apos;re buying the pass + primary raise lane, not a promise DM.
-          </li>
+          <li>1. Your SOL goes into the raise vault at the price on the card.</li>
+          <li>2. You get your Genesis Pass NFT.</li>
+          <li>3. A little extra goes to the platform as the mint fee.</li>
           {remaining === 1 ? (
-            <li>4. After mint confirms, client submits Meteora vault fill (second wallet approval if shown).</li>
+            <li>4. If you&apos;re the last mint, you may see one more wallet step to close the vault.</li>
           ) : null}
         </ul>
       </div>
@@ -248,19 +245,17 @@ export function GenesisPassMintPanel({ collection: c, anchorMintActive = false }
 
       {remaining > 0 && isReady && !anchorMintActive ? (
         <div className="rounded-xl border border-amber-400/25 bg-amber-400/5 p-3 text-[11px] leading-relaxed text-amber-100/95">
-          <p className="font-medium text-amber-50">Mint gate: Anchor MINT_ACTIVE</p>
+          <p className="font-medium text-amber-50">Mint isn&apos;t open yet</p>
           <p className="mt-1.5 text-amber-100/90">
-            Vault and Core collection are linked, but the on-chain controller must reach{" "}
-            <span className="text-white/90">MINT_ACTIVE</span> before hybrid mints record participation. The creator
-            finishes this from the{" "}
+            Almost there—the creator needs one last on-chain step so mints can count. Ask them to open{" "}
             <Link href={`/launch/${c.slug}#deploy-on-chain`} className="underline underline-offset-2 hover:text-white">
-              launch page
+              Deploy
             </Link>{" "}
-            deploy panel (Anchor step).
+            on the launch page and finish it.
           </p>
           <p className="mt-2 text-amber-100/85">
             <Link href={`/launch/${c.slug}#deploy-on-chain`} className="underline underline-offset-2 hover:text-white">
-              Open launch deploy
+              Go to deploy
             </Link>
           </p>
         </div>
@@ -270,23 +265,14 @@ export function GenesisPassMintPanel({ collection: c, anchorMintActive = false }
         <div className="rounded-xl border border-amber-400/25 bg-amber-400/5 p-3 text-[11px] leading-relaxed text-amber-100/95">
           <p className="font-medium text-amber-50">Why mint is disabled</p>
           <p className="mt-1.5 text-amber-100/90">
-            The app needs both a{" "}
-            <span className="text-white/90">Metaplex Core collection</span> and a{" "}
-            <span className="text-white/90">Meteora Alpha Vault</span> address on the launch record to build the mint
-            transaction.
+            We need a collection address and a vault address on this launch before anyone can mint.
           </p>
           <p className="mt-2 text-amber-100/85">
             Creator: finish{" "}
             <Link href={`/launch/${c.slug}`} className="underline underline-offset-2 hover:text-white">
               Deploy on-chain
             </Link>{" "}
-            on the{" "}
-            <Link href={`/launch/${c.slug}`} className="underline underline-offset-2 hover:text-white">
-              launch page
-            </Link>{" "}
-            and confirm Supabase has{" "}
-            <code className="rounded bg-black/30 px-1 py-0.5 font-mono text-[10px]">core_collection</code> and{" "}
-            <code className="rounded bg-black/30 px-1 py-0.5 font-mono text-[10px]">alpha_vault</code>.
+            on the launch page so both show up here.
           </p>
         </div>
       ) : null}
@@ -319,12 +305,10 @@ export function GenesisPassMintPanel({ collection: c, anchorMintActive = false }
           >
             <p className="font-display text-sm font-semibold text-white">Genesis reveal · you&apos;re early</p>
             <p>
-              Minted Genesis Pass + deposited into the Alpha Vault in a single transaction. Metadata rarity is whatever
-              Metaplex + your indexer show — not decided here.
+              You minted your pass and sent the raise to the vault in one go. Rarity and traits show up wherever your
+              metadata and explorers read them from.
             </p>
-            <p className="text-[11px] text-emerald-100/85">
-              Participation receipt: on-chain asset + vault deposit. Share the tx, tag the creator, flex the pass.
-            </p>
+            <p className="text-[11px] text-emerald-100/85">Share the transaction link and show off your pass.</p>
             <div className="flex flex-wrap items-center gap-3">
               <GenesisPassInspectModal assetMint={phase.asset} />
             </div>
@@ -349,13 +333,11 @@ export function GenesisPassMintPanel({ collection: c, anchorMintActive = false }
       <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
         {relaxedGenesisMintWithoutLifecycle() ? (
           <p className="text-[11px] leading-relaxed text-amber-100/80">
-            Relaxed mint gate: you can print while Anchor is still catching up; participation records once the launch
-            reaches <span className="text-white/90">MINT_ACTIVE</span>.
+            Relaxed mode: you can mint a little before the chain is fully caught up.
           </p>
         ) : (
           <p className="text-[11px] leading-relaxed text-muted">
-            Holders ride this launch&apos;s fee story on DAMM / Alpha Vault rails — details on the project page. Only bet
-            what you can torch.
+            Fees and timing follow this launch&apos;s on-chain setup. Only spend what you&apos;re okay losing.
           </p>
         )}
         <PrivyFundWalletButton

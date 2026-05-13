@@ -6,6 +6,7 @@ import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { Connection, Keypair, PublicKey, SendTransactionError, Transaction } from "@solana/web3.js";
 import BN from "bn.js";
 
+import { ProtocolLayersHint } from "@/components/protocol/ProtocolLayersHint";
 import { useConnectFlow } from "@/lib/auth/use-connect-flow";
 import { buildMintPoolVaultSequence } from "@/lib/launch/build-mint-pool-vault-single-tx";
 import { buildDeployCollectionTx } from "@/lib/launch/build-deploy-collection-tx";
@@ -579,6 +580,8 @@ export function DeployOnChainPanel({ collection: c }: Props) {
               ? "Token mint, DAMM v2 pool, Alpha Vault, and Core collection are linked on this launch."
               : "Step 1: three or four on-chain signatures — token + metadata, then DAMM pool, then Alpha Vault (+ mint revoke in a separate tx only if size requires it). Step 2: Core Genesis Pass collection. Step 3: Anchor advances to MINT_ACTIVE. Genesis mint stays gated until vault + collection exist."}
           </p>
+
+          <ProtocolLayersHint className="mt-4" />
 
           <div className="mt-4 space-y-3 rounded-xl border border-line/80 bg-panel/50 p-4">
             {vaultSelloutTarget ? (

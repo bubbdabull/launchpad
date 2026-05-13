@@ -15,8 +15,10 @@ import { toSolanaWalletConnectors } from "@privy-io/react-auth/solana";
 
 import { getPublicRpcUrl } from "@/lib/solana/cluster-public";
 
+import { MobileWalletBrowserHint } from "./auth/MobileWalletBrowserHint";
 import { PrivySessionSync } from "./auth/PrivySessionSync";
 import { PrivyWalletBridge } from "./auth/PrivyWalletBridge";
+import { SolanaMobileWalletRegister } from "./auth/SolanaMobileWalletRegister";
 import { SmoothScroll } from "./layout/smooth-scroll";
 import { QueryProvider } from "./providers/query-provider";
 
@@ -38,6 +40,7 @@ export function Providers({ children }: { children: ReactNode }) {
 
   const queryAndChildren = (
     <QueryProvider>
+      <MobileWalletBrowserHint />
       <SmoothScroll />
       {PRIVY_ACTIVE ? (
         <>
@@ -52,11 +55,14 @@ export function Providers({ children }: { children: ReactNode }) {
   const solanaOuter = (
     <ConnectionProvider endpoint={endpoint}>
       <WalletProvider wallets={wallets} autoConnect={!PRIVY_ACTIVE}>
+        <SolanaMobileWalletRegister />
         <WalletModalProvider>
           {PRIVY_ACTIVE ? (
             <PrivyProvider
               appId={PRIVY_APP_ID!}
               config={{
+                walletConnectCloudProjectId:
+                  process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID?.trim() || undefined,
                 // Email + social + (optional) wallet for crypto-natives. Wallet entry
                 // here lets users link an existing Phantom/Solflare to a Privy
                 // identity if they want — they can also bypass Privy entirely via

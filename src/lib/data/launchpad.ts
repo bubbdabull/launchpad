@@ -26,13 +26,13 @@ function pickFeatured(rows: CollectionRow[], mapped: Collection[]): Collection {
     const hit = mapped.find((c) => c.slug === featuredRow.slug);
     if (hit) return hit;
   }
-  return mapped[0] ?? { ...getStaticFeatured(), hasStorefront: false };
+  return mapped[0] ?? { ...getStaticFeatured() };
 }
 
 function fallbackPageData(): LaunchpadPageData {
   return {
-    collections: fallbackCollections.map((c) => ({ ...c, hasStorefront: false })),
-    featured: { ...getStaticFeatured(), hasStorefront: false },
+    collections: fallbackCollections.map((c) => ({ ...c })),
+    featured: { ...getStaticFeatured() },
     platformStats: fallbackPlatformStats,
   };
 }
@@ -62,19 +62,7 @@ export async function getLaunchpadPageData(): Promise<LaunchpadPageData> {
     }
 
     const rows = data as CollectionRow[];
-    const shopSlugs = new Set<string>();
-    try {
-      const { data: prod } = await supabase.from("products").select("collection_slug").eq("active", true);
-      for (const p of prod ?? []) {
-        shopSlugs.add(String((p as { collection_slug: string }).collection_slug));
-      }
-    } catch {
-      /* products table may not exist yet */
-    }
-    const mapped = rows.map((row) => ({
-      ...rowToCollection(row),
-      hasStorefront: shopSlugs.has(row.slug),
-    }));
+    const mapped = rows.map((row) => rowToCollection(row));
     return {
       collections: mapped,
       featured: pickFeatured(rows, mapped),

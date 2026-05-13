@@ -67,22 +67,40 @@ export async function getPrivyUserFromCookies(): Promise<User | null> {
   }
 }
 
+type SolanaWalletLink = {
+  address: string;
+  walletClientType?: string;
+};
+
+function solanaWalletLinksFromUser(user: User): SolanaWalletLink[] {
+  const out: SolanaWalletLink[] = [];
+  for (const account of user.linkedAccounts) {
+    if (account.type !== "wallet") continue;
+    if (account.chainType !== "solana") continue;
+    if (typeof account.address !== "string") continue;
+    const walletClientType =
+      "walletClientType" in account && typeof account.walletClientType === "string"
+        ? account.walletClientType
+        : undefined;
+    out.push({ address: account.address, walletClientType });
+  }
+  return out;
+}
+
 /**
- * Pulls the first Solana wallet address linked to the Privy user. Privy
- * stamps embedded wallets with `walletClientType:"privy"`; external
- * wallets (Phantom, Solflare) connected via Privy carry their own client
- * type. We don't care which — just that there's a Solana address we can
- * use as the user's identity on this platform.
+ * Picks the Solana address for our session cookie. Must follow the same
+ * preference as `pickPrimaryPrivySolanaWallet` in the browser: when both an
+ * embedded wallet and an external wallet (Phantom, etc.) exist, prefer the
+ * external one so `lp_wallet_session` matches what `PrivyWalletBridge` +
+ * `useWallet()` connect for signing.
  */
 export function pickSolanaAddress(user: User): string | null {
-  for (const account of user.linkedAccounts) {
-    if (
-      account.type === "wallet" &&
-      account.chainType === "solana" &&
-      typeof account.address === "string"
-    ) {
-      return account.address;
-    }
-  }
-  return null;
+  const links = solanaWalletLinksFromUser(user);
+  if (links.length === 0) return null;
+  if (links.length === 1) return links[0].address;
+  const external = links.find((l) => {
+    const t = String(l.walletClientType ?? "").toLowerCase();
+    return t.length > 0 && t !== "privy";
+  });
+  return (external ?? links[0]).address;
 }

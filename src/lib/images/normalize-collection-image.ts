@@ -9,7 +9,7 @@ const LOGO_SIZE = 512;
 /** Wide hero (~3:1) used by launch pages and many indexers. */
 const BANNER_WIDTH = 1920;
 const BANNER_HEIGHT = 640;
-/** Gallery / store stills — cap long edge so metadata stays light. */
+/** Gallery stills — cap long edge so metadata stays light. */
 const GALLERY_MAX_EDGE = 1600;
 
 const MAX_OUT_BYTES = 5 * 1024 * 1024;
@@ -37,7 +37,7 @@ export async function normalizeCollectionImageForMetadata(
         .png({ compressionLevel: 9 })
         .toBuffer();
     } else {
-      // gallery + store: never upscale; shrink if too large for sane loads.
+      // gallery: never upscale; shrink if too large for sane loads.
       const meta = await pipeline.metadata();
       const w = meta.width ?? 0;
       const h = meta.height ?? 0;
@@ -74,6 +74,6 @@ export async function normalizeCollectionImageForMetadata(
 export function collectionImageTargetLabel(kind: CollectionAssetKind): string {
   if (kind === "logo") return `${LOGO_SIZE}×${LOGO_SIZE} PNG`;
   if (kind === "banner") return `${BANNER_WIDTH}×${BANNER_HEIGHT} PNG`;
-  if (kind === "gallery" || kind === "store") return `max ${GALLERY_MAX_EDGE}px PNG`;
+  if (kind === "gallery") return `max ${GALLERY_MAX_EDGE}px PNG`;
   return "PNG";
 }

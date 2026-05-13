@@ -27,7 +27,6 @@ import { revalidatePath } from "next/cache";
 import { getWalletSession } from "@/lib/auth/session";
 import { isCollectionCreator } from "@/lib/data/store-admin";
 import { parseNftGalleryUrlsJson } from "@/lib/launch/nft-gallery";
-import { isValidAccentColor, sanitizeProjectPageDoc } from "@/lib/launch/project-page";
 import {
   serializeTokenMetadataProfile,
   tokenMetadataProfileFromForm,
@@ -236,83 +235,12 @@ export async function updateLaunchSettings(
   revalidatePath("/");
   revalidatePath(`/project/${slug}`);
   revalidatePath(`/project/${slug}/manage`);
-  revalidatePath(`/project/${slug}/store`);
   revalidatePath(`/launch/${slug}`);
   revalidatePath(`/mint/${slug}`);
   revalidatePath(`/creator/${session.address}`);
   revalidatePath("/dashboard");
 
   return { ok: true, message: "Saved. Public pages will refresh shortly." };
-}
-
-/**
- * Update the project-page document + theme settings for a launch.
- *
- * Body comes from the page-editor as a single JSON-encoded form field
- * (`payload`). We sanitize the doc through `sanitizeProjectPageDoc` so
- * arbitrary JSON in the form body can never persist invalid block
- * shapes or unsafe URLs.
- *
- * Theme fields (accent color, hero layout, headline overrides) are
- * stored as flat columns alongside the JSONB doc.
- */
-export async function updateProjectPage(
-  _prev: LaunchManageState,
-  form: FormData,
-): Promise<LaunchManageState> {
-  const session = await getWalletSession();
-  if (!session) return { ok: false, message: "Sign in with your wallet first." };
-
-  const slug = asText(form, "slug").toLowerCase();
-  if (!SLUG_RE.test(slug)) return { ok: false, message: "Bad slug." };
-
-  const allowed = await isCollectionCreator(slug, session.address);
-  if (!allowed) return { ok: false, message: "Only the launch creator can edit the page." };
-
-  const payloadRaw = asText(form, "payload");
-  let payload: unknown;
-  try {
-    payload = payloadRaw ? JSON.parse(payloadRaw) : {};
-  } catch {
-    return { ok: false, message: "Page payload was not valid JSON." };
-  }
-
-  const doc = sanitizeProjectPageDoc(payload);
-
-  const accentColorRaw = asText(form, "accentColor");
-  const accentColor =
-    accentColorRaw && isValidAccentColor(accentColorRaw) ? accentColorRaw : null;
-
-  const heroLayoutRaw = asText(form, "heroLayout");
-  const heroLayout =
-    heroLayoutRaw === "minimal" || heroLayoutRaw === "split" || heroLayoutRaw === "classic"
-      ? heroLayoutRaw
-      : null;
-
-  const projectHeadline = clampString(asText(form, "projectHeadline"), 200) || null;
-  const projectSubhead = clampString(asText(form, "projectSubhead"), 400) || null;
-
-  const supabase = createServiceRoleClient();
-  const { error } = await supabase
-    .from("collections")
-    .update({
-      project_page: doc,
-      accent_color: accentColor,
-      hero_layout: heroLayout,
-      project_headline: projectHeadline,
-      project_subhead: projectSubhead,
-    })
-    .eq("slug", slug);
-  if (error) return { ok: false, message: error.message };
-
-  revalidatePath(`/project/${slug}`);
-  revalidatePath(`/project/${slug}/manage`);
-  revalidatePath(`/project/${slug}/manage/page-editor`);
-
-  return {
-    ok: true,
-    message: `Saved · ${doc?.blocks.length ?? 0} block${doc?.blocks.length === 1 ? "" : "s"}.`,
-  };
 }
 
 export async function setLaunchPublished(

@@ -46,7 +46,7 @@ export async function POST(req: Request) {
   }
 
   const kind = String(form.get("kind") ?? "");
-  if (kind !== "banner" && kind !== "logo" && kind !== "gallery" && kind !== "store") {
+  if (kind !== "banner" && kind !== "logo" && kind !== "gallery") {
     return NextResponse.json({ ok: false, error: "Invalid upload type." }, { status: 400 });
   }
 

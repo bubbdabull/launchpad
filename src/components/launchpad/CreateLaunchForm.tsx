@@ -692,20 +692,19 @@ export function CreateLaunchForm() {
             <p className="text-[11px] text-muted">Shown on cards · just for display</p>
           </div>
           <div className="space-y-2">
-            <FieldLabel>Genesis mint tax (minters)</FieldLabel>
+            <FieldLabel>Mint fee (minters)</FieldLabel>
             <input
               disabled
               readOnly
               value={
                 valid
                   ? `${GENESIS_MINT_TAX_PCT_LABEL} of mint price → +${formatSol(exampleGenesisTaxLamports)} per mint`
-                  : `${GENESIS_MINT_TAX_PCT_LABEL} of mint price (matches launch-controller on-chain)`
+                  : `${GENESIS_MINT_TAX_PCT_LABEL} of mint price`
               }
               className="w-full cursor-not-allowed rounded-xl border border-line/60 bg-panel px-4 py-3 text-sm text-muted"
             />
             <p className="text-[11px] text-muted">
-              Minters pay mint price into the Alpha Vault plus this tax (same 700 bps as Anchor <span className="font-mono text-white/70">mint_nft</span>
-              ). The hybrid mint path sends the tax total in SOL to the platform treasury.
+              Minters pay the mint price to the vault plus this small extra to the platform. Same idea as the live app.
             </p>
           </div>
         </div>
@@ -1008,26 +1007,25 @@ export function CreateLaunchForm() {
               <p className="mt-1 font-display text-lg font-semibold text-white">
                 {bpsToPctLabel(creatorSelfBps)}
               </p>
-              <p className="text-[11px] text-muted">{creatorSelfPct}% of your pot · claimable any time</p>
+              <p className="text-[11px] text-muted">Your slice of the fee pot when trading is on.</p>
             </div>
             <div className="rounded-xl border border-line/70 bg-panel/40 p-3">
               <p className="text-[10px] uppercase tracking-wider text-muted">Genesis Pass holders earn</p>
               <p className="mt-1 font-display text-lg font-semibold text-white">
                 {bpsToPctLabel(holderBps)}
               </p>
-              <p className="text-[11px] text-muted">{holderRewardPct}% of your pot · auto-distributed pro-rata</p>
+              <p className="text-[11px] text-muted">Their slice of the same pot when trading is on.</p>
             </div>
           </div>
         </div>
 
         <p className="text-xs text-muted">
-          DAMM / LP splits are configured in Meteora when you graduate from the vault. This section only captures how you
-          want to think about holder vs creator share for any fee tooling we surface.
+          The real pool settings are set in Meteora when you create the pool. This is how you want the story told on
+          cards and what we save for deploy.
         </p>
         <p className="text-[11px] text-muted">
-          On-chain mirror of your holder split above:{" "}
-          <span className="font-mono text-white/80">{holderRewardPct * 100}</span> bps of the trading-tax creator leg
-          (0–10_000) saved as deploy intent for holder index routing.
+          We store <span className="font-mono text-white/80">{holderRewardPct * 100}</span> bps toward the holder side
+          of that trading-fee slice.
         </p>
         <div className="space-y-2">
           <FieldLabel>Phase name</FieldLabel>
@@ -1040,7 +1038,7 @@ export function CreateLaunchForm() {
           />
         </div>
         <div className="space-y-2">
-          <FieldLabel>Creator payout wallet (Solana)</FieldLabel>
+          <FieldLabel>Your wallet for creator fees</FieldLabel>
           <input
             name="creatorTreasury"
             placeholder="Your Solana address"
@@ -1048,7 +1046,7 @@ export function CreateLaunchForm() {
             value={creatorTreasury}
             onChange={(e) => setCreatorTreasury(e.target.value)}
           />
-          <p className="text-[11px] text-muted">Where your trading-fee rewards and any leftover SOL settle.</p>
+          <p className="text-[11px] text-muted">Your Solana address for creator-side fees.</p>
         </div>
         <div className="rounded-xl border border-line/70 bg-panel/40 p-4 text-xs leading-relaxed text-muted">
           <p className="text-white/90">Mint opens only after on-chain deploy.</p>
@@ -1059,8 +1057,8 @@ export function CreateLaunchForm() {
 
       <Section
         step="06"
-        title="On-chain holder claims & incentives"
-        subtitle="Optional pacing for holder reward claims and creator-funded incentives — configured by you, enforced on-chain when you pass CreatorRewardConfig. Values are stored with the launch for deploy wiring (see docs/creator-reward-config-architecture.md)."
+        title="Holder claim timing"
+        subtitle="Optional. We save this with your launch for deploy. Solana enforces the real timing."
       >
         <input type="hidden" name="creatorRewardVestingSlots" value={creatorRewardVestingSlots} />
         <input type="hidden" name="creatorRewardClaimStartDelaySlots" value={creatorRewardDelaySlots} />
@@ -1134,9 +1132,8 @@ export function CreateLaunchForm() {
             <p className="text-xs text-muted">0% = gate off · otherwise bps for optional creator-funded vault top-ups</p>
           </div>
           <p className="mt-2 text-[11px] leading-relaxed text-muted">
-            When greater than zero, on-chain rules allow routing SPL from your creator treasury into the holder reward
-            vault using the same index as other vault funding — economics are derived from on-chain settings, not
-            guaranteed here.
+            If you turn this on, it only does something when your on-chain setup supports it. This slider just saves
+            your choice.
           </p>
           <div className="mt-3 flex items-center gap-3">
             <span className="w-14 text-right text-[10px] uppercase tracking-wider text-muted">Off</span>
@@ -1163,10 +1160,9 @@ export function CreateLaunchForm() {
             onChange={(e) => setCreatorRewardImmutable(e.target.checked)}
           />
           <span>
-            <span className="block text-sm font-medium text-white/90">Lock holder-claim config after trading is live</span>
+            <span className="block text-sm font-medium text-white/90">Lock these settings after trading goes live</span>
             <span className="mt-1 block text-[11px] leading-relaxed text-muted">
-              Maps to <span className="font-mono text-white/70">immutable_after_launch</span> on-chain: when enabled,
-              updates are blocked once lifecycle reaches trading-active (program-enforced).
+              When on, you can&apos;t change these settings after trading goes live—Solana locks that for you.
             </span>
           </span>
         </label>

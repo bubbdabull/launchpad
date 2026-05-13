@@ -138,18 +138,6 @@ export async function GET(req: Request) {
   }
 
   const rows = (data ?? []) as CollectionRow[];
-  const slugs = rows.map((r) => r.slug);
-
-  // Storefront flag join — keeps the existing "Store live" badge accurate.
-  const shopSlugs = new Set<string>();
-  if (slugs.length > 0) {
-    const { data: prod } = await supabase
-      .from("products")
-      .select("collection_slug")
-      .eq("active", true)
-      .in("collection_slug", slugs);
-    for (const p of prod ?? []) shopSlugs.add(String((p as { collection_slug: string }).collection_slug));
-  }
 
   // Verified-creator + display-name join. Single roundtrip for all
   // creator wallets that appear in this page of results.
@@ -178,7 +166,6 @@ export async function GET(req: Request) {
     const profile = row.creator_wallet ? profileByWallet.get(row.creator_wallet) : null;
     return {
       ...c,
-      hasStorefront: shopSlugs.has(row.slug),
       creatorVerified: profile?.verified ?? false,
       creatorDisplayName: profile?.display_name ?? undefined,
     };

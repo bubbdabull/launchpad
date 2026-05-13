@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
-import { usePrivy } from "@privy-io/react-auth";
+import { useLogin } from "@privy-io/react-auth";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 
 const PRIVY_ENABLED =
@@ -30,7 +30,11 @@ export function useConnectFlow() {
 }
 
 function usePrivyConnectFlow() {
-  const { login } = usePrivy();
+  const { login } = useLogin({
+    onError: (err) => {
+      console.warn("[useConnectFlow] Privy login error:", err);
+    },
+  });
   return useCallback(() => {
     login();
   }, [login]);

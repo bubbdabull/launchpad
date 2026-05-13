@@ -244,7 +244,7 @@ export function LaunchArtStudio({
       <div className="rounded-xl border border-accent/20 bg-accent/[0.04] p-4">
         <h3 className="text-sm font-semibold text-white">Launch art studio</h3>
         <p className="mt-1 text-[11px] leading-relaxed text-muted">
-          Upload banner, logo, and gallery images — they are stored on our servers (Supabase) and get stable{" "}
+          Upload banner, logo, and gallery images — they&apos;re saved with your launch and get stable{" "}
           <span className="text-white/80">https://</span> URLs for your launch and on-chain metadata. Use{" "}
           <span className="text-white/80">Generate with AI</span> on any slot for DALL·E 3 art saved the same way. You
           can still paste external links if something already lives on a CDN.

@@ -21,11 +21,9 @@ import { pickPrimaryPrivySolanaWallet } from "@/lib/auth/privy-primary-solana-wa
 /**
  * Bridges Privy authentication into the existing wallet-adapter flow so
  * that components calling `useWallet().signTransaction(...)` (mint,
- * deploy, vault/DAMM flows, claim, reward-holders) automatically use the
+ * deploy, vault/DAMM flows, claim) automatically use the
  * user's Privy-linked Solana account (embedded or external) without
  * per-component refactors.
- *
- * Privy exposes linked Solana accounts as Wallet Standard wallets; we
  * register the active one with `@wallet-standard/app` so wallet-adapter
  * can wrap it in a `StandardWalletAdapter`, then select and connect it.
  *

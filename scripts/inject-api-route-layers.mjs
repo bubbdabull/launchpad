@@ -46,7 +46,6 @@ const LAYER_BY_FILE = {
   "src/app/api/auth/siws/logout/route.ts": "L3",
   "src/app/api/auth/siws/verify/route.ts": "L3",
   "src/app/api/auth/siws/nonce/route.ts": "L3",
-  "src/app/api/store/checkout/route.ts": "L3",
 };
 
 const TAG_RE = /@apiRouteLayer\s+(L2|L3|FORBIDDEN)\b/;

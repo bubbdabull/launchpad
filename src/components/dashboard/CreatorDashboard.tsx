@@ -29,8 +29,6 @@ type LaunchRow = {
   distributionCount: number;
   referralCount: number;
   referralVolumeLamports: string;
-  productCountTotal: number;
-  productCountActive: number;
 };
 
 type Resp =
@@ -174,11 +172,8 @@ export function CreatorDashboard() {
 
       <section className="rounded-2xl border border-line bg-panel/40 p-6 text-xs leading-relaxed text-muted">
         <p>
-          Numbers update from on-chain events as Helius webhooks fire. Fees claimed reflects
-          creator-side fee claims recorded in the database. Holders is a snapshot — Helius DAS
-          recount runs nightly. Referrals counts every Pass mint that came in through any{" "}
-          <span className="font-mono">?ref=</span> link pointing at one of your launches. A cached DAMM pool address
-          on a card is routing metadata only — it does not represent Anchor lifecycle.
+          These numbers come from the chain and can update a bit later on the screen. They&apos;re for your
+          dashboard—Solana still decides what&apos;s really owed.
         </p>
       </section>
     </div>
@@ -261,11 +256,6 @@ function LaunchManageCard({ launch: l }: { launch: LaunchRow }) {
 
           <div className="flex flex-wrap gap-2">
             <ManageBtn href={`/project/${l.slug}/manage`} label="Edit launch" highlight />
-            <ManageBtn
-              href={`/project/${l.slug}/manage/page-editor`}
-              label="Customize page"
-              highlight
-            />
             <ManageBtn href={`/launch/${l.slug}`} label="Trade page" />
             <ManageBtn href={`/project/${l.slug}`} label="Project page" />
             <ManageBtn href={`/mint/${l.slug}`} label="Mint page" />

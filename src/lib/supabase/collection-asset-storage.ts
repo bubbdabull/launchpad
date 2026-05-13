@@ -5,7 +5,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 const MAX_BYTES = 5 * 1024 * 1024;
 const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
-export type CollectionAssetKind = "banner" | "logo" | "gallery" | "store";
+export type CollectionAssetKind = "banner" | "logo" | "gallery";
 
 function extForMime(mime: string): string {
   if (mime === "image/jpeg") return "jpg";
@@ -42,10 +42,7 @@ export async function uploadCollectionAssetBuffer(
 
   const wallet = walletAddress.replace(/^0x/i, "").toLowerCase().slice(0, 40);
   const ext = extForMime(contentType);
-  const objectPath =
-    kind === "store"
-      ? `store-products/${wallet}/${Date.now()}.${ext}`
-      : `${wallet}/${Date.now()}-${kind}.${ext}`;
+  const objectPath = `${wallet}/${Date.now()}-${kind}.${ext}`;
   const bucket = collectionAssetsBucketName();
 
   const { error: upErr } = await supabase.storage.from(bucket).upload(objectPath, buffer, {

@@ -198,13 +198,13 @@ export function LaunchSettingsForm({
 
         <section className="space-y-5">
           <SectionHeader
-            title="Holder rewards (off-chain)"
-            sub="Both knobs are enforced when you run Claim & distribute or Reward holders. Editable any time."
+            title="Holder rewards"
+            sub="We save these with your launch. Once you're live, Solana runs the real rules."
           />
           <div className="grid gap-4 sm:grid-cols-2">
             <Field
               label="Trading-fee % to holders"
-              sub="Out of your 2% creator fee pot. 50 = even split with you."
+              sub="Share of your trading-fee slice that goes to pass holders."
             >
               <input
                 name="holderRewardPct"
@@ -218,7 +218,7 @@ export function LaunchSettingsForm({
             </Field>
             <Field
               label="Vested-token % to holders"
-              sub="Of every wave you unlock, share to Pass holders pro-rata."
+              sub="How much of unlocked tokens you want to point at pass holders (saved here for later setup)."
             >
               <input
                 name="tokenHolderRewardPct"

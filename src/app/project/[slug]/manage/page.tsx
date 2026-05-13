@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { ProtocolLayersHint } from "@/components/protocol/ProtocolLayersHint";
 import { DualMarketDiscoveryCard } from "@/components/launch/DualMarketDiscoveryCard";
 import { GenesisPassNftConfigForm } from "@/components/launch/GenesisPassNftConfigForm";
 import { LaunchSettingsForm } from "@/components/launch/LaunchSettingsForm";
@@ -26,7 +27,6 @@ export default async function LaunchManagePage({ params }: PageProps) {
   const c = await getCollectionBySlug(slug);
   if (!c) notFound();
 
-  // Pull product count to show storefront status next to the manage links.
   const supabase = createServiceRoleClient();
   let isPublished = true;
   try {
@@ -52,28 +52,26 @@ export default async function LaunchManagePage({ params }: PageProps) {
           {c.name}
         </h1>
         <p className="mt-2 text-sm text-muted">
-          Edit metadata, publication, and discovery. Pages refresh shortly after each save.
+          Deploy on-chain, tune the Genesis Pass, and control visibility. The public project page is
+          defined when you create the launch (headline, story, art, and links).
         </p>
+        <ProtocolLayersHint className="mt-4 max-w-2xl" />
       </header>
 
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <ManageLink
-          href={`/project/${slug}/manage/page-editor`}
-          label="Customize project page"
-          hint="Story blocks, FAQ, roadmap, theme"
+          href={`/launch/${slug}`}
+          label="Trade & deploy"
+          hint="Alpha Vault, on-chain wiring, economics"
           highlight
         />
         <ManageLink
           href={`/mint/${slug}`}
           label="Genesis Pass mint"
           hint="Public mint surface"
-        />
-        <ManageLink
-          href={`/launch/${slug}`}
-          label="Trade page"
-          hint="Deploy on-chain + Alpha Vault"
           highlight
         />
+        <ManageLink href={`/project/${slug}`} label="View project page" hint="Art, mint progress, links" />
       </section>
 
       <section className="grid gap-3 sm:grid-cols-3">
