@@ -9,7 +9,6 @@ import {
   type LaunchManageState,
 } from "@/app/project/[slug]/manage/actions";
 import { LaunchMediaSection } from "@/components/launchpad/LaunchMediaSection";
-import { CreationProtocolLayersCard } from "@/components/protocol/CreationProtocolLayersCard";
 import { serializeTokenMetadataProfile } from "@/lib/launch/token-metadata-profile";
 import type { Collection } from "@/types/collection";
 
@@ -104,7 +103,6 @@ export function LaunchSettingsForm({
             title="Public-facing details"
             sub="Shown on the home grid, project page, and trade page."
           />
-          <CreationProtocolLayersCard snapshot={c.creationProtocolLayers ?? null} variant="full" preSubmitFooter={false} />
           <Field label="Name" maxLength={96}>
             <input
               name="name"

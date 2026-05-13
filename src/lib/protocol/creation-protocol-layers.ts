@@ -1,7 +1,7 @@
 /**
- * Immutable snapshot stored on `collections.creation_protocol_layers` at draft insert.
- * v1: platform L1/L2/L3 only. v2: adds `nftCollectionLayers` (Genesis Pass / variations / holder UX).
- * Authoritative mint + ownership rules remain L1 on-chain — this JSON is disclosure + audit only.
+ * Snapshot stored on `collections.creation_protocol_layers` at draft insert (audit / support).
+ * v1: platform L1/L2/L3 only. v2: adds `nftCollectionLayers` for Genesis / NFT slice.
+ * Not shown on the public create/manage UI — parsing kept for tooling and legacy rows.
  */
 
 export type CreationProtocolLayerId = "L1" | "L2" | "L3";
@@ -19,16 +19,14 @@ export type CreationProtocolLayersSnapshot = {
   /** ISO-8601 when the row was created (server clock). */
   capturedAt: string;
   documentationRef: string;
-  /** Platform stack: chain vs mirrors vs this app (`docs/PRODUCT_ARCHITECTURE.md`). */
   layers: CreationProtocolLayer[];
   /**
-   * v2 only: Genesis Pass / NFT collection — where trait variation is configured in this app vs
-   * what lives on-chain or in indexers. Omitted in v1 snapshots.
+   * v2 only: Genesis Pass / NFT collection slice. Omitted in v1 snapshots.
    */
   nftCollectionLayers?: CreationProtocolLayer[];
 };
 
-/** Canonical platform L1/L2/L3 (stored JSON + tiny UI tiles). */
+/** Canonical platform L1/L2/L3 written on new drafts (not rendered in product UI). */
 export const CREATION_PROTOCOL_LAYERS: readonly CreationProtocolLayer[] = [
   {
     id: "L1",
@@ -53,7 +51,6 @@ export const CREATION_PROTOCOL_LAYERS: readonly CreationProtocolLayer[] = [
   },
 ] as const;
 
-/** Genesis / NFT slice (audit JSON only — not shown as a wall of copy in the UI). */
 export const NFT_COLLECTION_PROGRAM_LAYERS: readonly CreationProtocolLayer[] = [
   {
     id: "L1",

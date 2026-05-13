@@ -3,7 +3,6 @@
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 
 import { createDraftCollection, type CreateLaunchState } from "@/app/create/actions";
-import { CreationProtocolLayersCard } from "@/components/protocol/CreationProtocolLayersCard";
 import {
   explainLaunchEconomicsError,
   LAUNCH_ECONOMICS_POLICY,
@@ -305,7 +304,10 @@ export function CreateLaunchForm() {
         title="How this works"
         subtitle="This form saves your launch listing. Mint limits, pricing, and trading behavior are enforced on-chain when you deploy from your launch’s trade page—not by this form alone."
       >
-        <CreationProtocolLayersCard />
+        <p className="max-w-2xl text-[13px] leading-relaxed text-muted">
+          Go through each step in order, then create your launch. You can change most listing details later; anything
+          that is already on-chain is updated only by signing transactions from your wallet on the trade page.
+        </p>
       </Section>
 
       <Section
