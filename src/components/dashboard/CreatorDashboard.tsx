@@ -29,6 +29,8 @@ type LaunchRow = {
   distributionCount: number;
   referralCount: number;
   referralVolumeLamports: string;
+  genesisTraitLayerCount: number | null;
+  genesisTraitHostedOnly: boolean;
 };
 
 type Resp =
@@ -256,6 +258,7 @@ function LaunchManageCard({ launch: l }: { launch: LaunchRow }) {
 
           <div className="flex flex-wrap gap-2">
             <ManageBtn href={`/project/${l.slug}/manage`} label="Edit launch" highlight />
+            <ManageBtn href={`/project/${l.slug}/manage#genesis-pass-traits`} label="Trait setup" />
             <ManageBtn href={`/launch/${l.slug}`} label="Trade page" />
             <ManageBtn href={`/project/${l.slug}`} label="Project page" />
             <ManageBtn href={`/mint/${l.slug}`} label="Mint page" />
@@ -266,6 +269,21 @@ function LaunchManageCard({ launch: l }: { launch: LaunchRow }) {
                 tone="warning"
               />
             ) : null}
+          </div>
+
+          <div className="flex flex-wrap items-baseline gap-2 border-t border-line/60 pt-3 text-[11px] text-muted">
+            <span className="font-medium text-white/70">Genesis traits</span>
+            <span>
+              {l.genesisTraitLayerCount != null
+                ? `${l.genesisTraitLayerCount} layer${l.genesisTraitLayerCount === 1 ? "" : "s"} saved on launch`
+                : l.genesisTraitHostedOnly
+                  ? "Using hosted JSON URL"
+                  : "Not configured"}
+            </span>
+            <span className="text-muted">·</span>
+            <Link href={`/project/${l.slug}/manage#genesis-pass-traits`} className="text-accent hover:underline">
+              Edit JSON
+            </Link>
           </div>
         </div>
       </div>

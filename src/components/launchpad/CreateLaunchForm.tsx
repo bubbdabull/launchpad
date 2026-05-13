@@ -450,7 +450,7 @@ export function CreateLaunchForm() {
         </p>
         <LaunchMediaSection
           variant="create"
-          introText="These uploads are for Genesis Pass or collection artwork only. Your DEXScreener-style banner and token icon live under Token metadata in step 01."
+          introText="These uploads are for Genesis Pass or collection artwork only. Your listing banner and token icon live under Token metadata in step 01."
           parts={{
             intro: true,
             banner: false,

@@ -52,6 +52,7 @@ type CollectionRow = {
   alpha_vault: string | null;
   core_collection: string | null;
   category: string | null;
+  genesis_pass_config: unknown | null;
 };
 
 type DistributionRow = {
@@ -78,6 +79,26 @@ function safeBig(v: string | null | undefined): bigint {
   }
 }
 
+function traitSummaryFromGenesisPass(raw: unknown): {
+  genesisTraitLayerCount: number | null;
+  genesisTraitHostedOnly: boolean;
+} {
+  if (raw == null || typeof raw !== "object" || Array.isArray(raw)) {
+    return { genesisTraitLayerCount: null, genesisTraitHostedOnly: false };
+  }
+  const o = raw as Record<string, unknown>;
+  const uri = typeof o.traitConfigUri === "string" && o.traitConfigUri.trim().length > 0;
+  const tc = o.traitConfig;
+  if (tc && typeof tc === "object" && !Array.isArray(tc)) {
+    const layers = (tc as { layers?: unknown }).layers;
+    if (Array.isArray(layers) && layers.length > 0) {
+      return { genesisTraitLayerCount: layers.length, genesisTraitHostedOnly: false };
+    }
+  }
+  if (uri) return { genesisTraitLayerCount: null, genesisTraitHostedOnly: true };
+  return { genesisTraitLayerCount: null, genesisTraitHostedOnly: false };
+}
+
 export async function GET() {
   const session = await getWalletSession();
   if (!session) {
@@ -89,7 +110,7 @@ export async function GET() {
   const { data: collections, error: cErr } = await supabase
     .from("collections")
     .select(
-      "slug, name, logo_url, banner_url, tagline, status, launched_at, minted, supply, mint_price_lamports, implied_apr_pct, volume_lamports_24h, volume_lamports_total, mints_last_hour, holder_count, is_published, alpha_vault, core_collection, damm_pool, category",
+      "slug, name, logo_url, banner_url, tagline, status, launched_at, minted, supply, mint_price_lamports, implied_apr_pct, volume_lamports_24h, volume_lamports_total, mints_last_hour, holder_count, is_published, alpha_vault, core_collection, damm_pool, category, genesis_pass_config",
     )
     .eq("creator_wallet", wallet)
     .order("launched_at", { ascending: false, nullsFirst: false });
@@ -176,6 +197,8 @@ export async function GET() {
     totalCreatorClaimed += creatorClaimed;
     totalHolderDistributed += holderDistributed;
 
+    const { genesisTraitLayerCount, genesisTraitHostedOnly } = traitSummaryFromGenesisPass(l.genesis_pass_config);
+
     if (l.status === "live") liveCount += 1;
     totalMinted += l.minted ?? 0;
     totalHolders += l.holder_count ?? 0;
@@ -210,6 +233,8 @@ export async function GET() {
       distributionCount,
       referralCount: refs.length,
       referralVolumeLamports: refVolume.toString(),
+      genesisTraitLayerCount,
+      genesisTraitHostedOnly,
     };
   });
 

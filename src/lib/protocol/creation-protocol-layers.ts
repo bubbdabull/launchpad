@@ -32,24 +32,24 @@ export type CreationProtocolLayersSnapshot = {
 export const CREATION_PROTOCOL_LAYERS: readonly CreationProtocolLayer[] = [
   {
     id: "L1",
-    title: "L1 · On-chain",
-    subtitle: "Anchor, Meteora, Metaplex — wallets, mints, pools.",
-    responsibilities: ["Authoritative balances, phase, and claims."],
-    boundaries: ["App and DB do not override program rules."],
+    title: "On-chain",
+    subtitle: "Mints, pools, and balances — the programs on Solana.",
+    responsibilities: ["Holds the real money and rules."],
+    boundaries: ["The website cannot change those rules."],
   },
   {
     id: "L2",
-    title: "L2 · Mirrors",
-    subtitle: "Helius + Supabase — stats and listings.",
-    responsibilities: ["Read-mostly caches and analytics for the UI."],
-    boundaries: ["Does not decide payouts or lifecycle."],
+    title: "Synced data",
+    subtitle: "Numbers and lists you see in the app.",
+    responsibilities: ["Faster reads and history for the UI."],
+    boundaries: ["Does not replace what the chain says."],
   },
   {
     id: "L3",
-    title: "L3 · This app",
-    subtitle: "Create, mint pages, uploads, unsigned txs.",
-    responsibilities: ["You sign with your wallet; we coordinate."],
-    boundaries: ["Not a second source of truth for economics."],
+    title: "This site",
+    subtitle: "Forms, images, and preparing transactions for you to sign.",
+    responsibilities: ["Walks you through setup and mint."],
+    boundaries: ["Your wallet still approves every important step."],
   },
 ] as const;
 
@@ -57,24 +57,24 @@ export const CREATION_PROTOCOL_LAYERS: readonly CreationProtocolLayer[] = [
 export const NFT_COLLECTION_PROGRAM_LAYERS: readonly CreationProtocolLayer[] = [
   {
     id: "L1",
-    title: "L1 · Core & mints",
-    subtitle: "Metaplex Core + SPL — what is minted and owned.",
-    responsibilities: ["Metadata updates when you sign reveal/deploy txs."],
-    boundaries: ["Trait JSON is off-chain until URIs are updated on-chain."],
+    title: "NFTs on-chain",
+    subtitle: "What gets minted and who owns it.",
+    responsibilities: ["Ownership and metadata the chain records."],
+    boundaries: ["Art links update when you sign the right transactions."],
   },
   {
     id: "L2",
-    title: "L2 · Caches",
-    subtitle: "Holders, volume, trait-config URLs you save.",
-    responsibilities: ["Mirrors for dashboards and mint UI."],
-    boundaries: ["Does not decide claims."],
+    title: "Synced NFT data",
+    subtitle: "Holders, volume, and saved art links.",
+    responsibilities: ["Powers dashboards and mint pages."],
+    boundaries: ["Does not change who owns what."],
   },
   {
     id: "L3",
-    title: "L3 · Here",
-    subtitle: "Art, trait-config link, reveal, rarity URL in create/manage.",
-    responsibilities: ["Configure listing; Trade page for signed deploy."],
-    boundaries: ["Metadata fields are not a substitute for signing txs."],
+    title: "Setup here",
+    subtitle: "Art, traits, reveal timing, and rarity links.",
+    responsibilities: ["What you configure before and after launch."],
+    boundaries: ["Still need your wallet to deploy and update on-chain."],
   },
 ] as const;
 

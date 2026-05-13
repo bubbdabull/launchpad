@@ -100,12 +100,6 @@ export async function updateGenesisPassNftConfig(
     return { ok: false, message: "Placeholder image must be an https URL." };
   } else next.placeholderImageUrl = placeholder;
 
-  const traitUri = asText(form, "traitConfigUri");
-  if (!traitUri) delete next.traitConfigUri;
-  else if (!isHttpsUrl(traitUri)) {
-    return { ok: false, message: "Trait config URL must be https." };
-  } else next.traitConfigUri = traitUri;
-
   const rarityListing = asText(form, "rarityListingUrl");
   if (!rarityListing) delete next.rarityListingUrl;
   else if (!isHttpsUrl(rarityListing)) {
@@ -115,17 +109,28 @@ export async function updateGenesisPassNftConfig(
   if (asText(form, "allowDynamicPostReveal") === "1") next.allowDynamicPostReveal = true;
   else delete next.allowDynamicPostReveal;
 
+  const traitUri = asText(form, "traitConfigUri");
   const advanced = asText(form, "traitConfigJson");
   if (advanced) {
     try {
       const parsed = JSON.parse(advanced) as unknown;
       next.traitConfig = assertTraitCollectionConfig(parsed);
+      delete next.traitConfigUri;
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Invalid JSON.";
       return { ok: false, message: `Trait config JSON: ${msg}` };
     }
   } else if (asText(form, "clearInlineTraitConfig") === "1") {
     delete next.traitConfig;
+  }
+
+  if (next.traitConfig) {
+    delete next.traitConfigUri;
+  } else {
+    if (!traitUri) delete next.traitConfigUri;
+    else if (!isHttpsUrl(traitUri)) {
+      return { ok: false, message: "Trait config URL must be https." };
+    } else next.traitConfigUri = traitUri;
   }
 
   if (

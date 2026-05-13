@@ -12,7 +12,7 @@ const MAX_OUT_BYTES = 5 * 1024 * 1024;
 
 /**
  * Resize + encode to PNG so on-chain metadata URIs always point at
- * predictable dimensions (wallets, Phantom, DEXScreener, etc.).
+ * predictable dimensions (wallets, explorers, listing UIs, etc.).
  */
 export async function normalizeCollectionImageForMetadata(
   kind: CollectionAssetKind,

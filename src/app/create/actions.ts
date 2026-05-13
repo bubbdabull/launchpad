@@ -17,6 +17,7 @@ import {
   tokenSocialLinksFromForm,
   validateTokenSocialLinks,
 } from "@/lib/launch/token-social";
+import { assertTraitCollectionConfig } from "@/lib/nft-generation/config-loader";
 import { buildCreationProtocolLayersSnapshot } from "@/lib/protocol/creation-protocol-layers";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import type { GenesisPassNftConfig } from "@/types/genesis-pass-nft";
@@ -88,15 +89,13 @@ function parseLamports(value: string): bigint | null {
 function parseGenesisPassConfigForCreate(
   form: FormData,
 ): { ok: true; value: GenesisPassNftConfig | null } | { ok: false; message: string } {
+  const traitJson = asText(form, "genesisTraitConfigJson");
   const traitConfigUri = asText(form, "genesisTraitConfigUri");
   const placeholderImageUrl = asText(form, "genesisPlaceholderImageUrl");
   const rarityListingUrl = asText(form, "genesisRarityListingUrl");
   const revealLocal = asText(form, "genesisRevealAtLocal");
   const allowDynamic = asText(form, "genesisAllowDynamicPostReveal") === "1";
 
-  if (traitConfigUri && !isHttpsUrl(traitConfigUri)) {
-    return { ok: false, message: "Trait config URL must be a full https:// link." };
-  }
   if (placeholderImageUrl && !isHttpsUrl(placeholderImageUrl)) {
     return { ok: false, message: "Genesis placeholder image must be a full https:// link." };
   }
@@ -108,7 +107,6 @@ function parseGenesisPassConfigForCreate(
   }
 
   const next: GenesisPassNftConfig = {};
-  if (traitConfigUri) next.traitConfigUri = traitConfigUri;
   if (placeholderImageUrl) next.placeholderImageUrl = placeholderImageUrl;
   if (rarityListingUrl) next.rarityListingUrl = rarityListingUrl;
   if (allowDynamic) next.allowDynamicPostReveal = true;
@@ -121,7 +119,23 @@ function parseGenesisPassConfigForCreate(
     next.revealAt = d.toISOString();
   }
 
+  if (traitJson) {
+    try {
+      const parsed = JSON.parse(traitJson) as unknown;
+      next.traitConfig = assertTraitCollectionConfig(parsed);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Invalid JSON.";
+      return { ok: false, message: `Trait config: ${msg}` };
+    }
+  } else if (traitConfigUri) {
+    if (!isHttpsUrl(traitConfigUri)) {
+      return { ok: false, message: "Trait config URL must be a full https:// link." };
+    }
+    next.traitConfigUri = traitConfigUri;
+  }
+
   if (
+    !next.traitConfig &&
     !next.traitConfigUri &&
     !next.placeholderImageUrl &&
     !next.rarityListingUrl &&

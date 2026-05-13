@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useCallback, useEffect, useState } from "react";
 
 import {
   genesisPassManageInitialState,
@@ -17,36 +17,70 @@ function toDatetimeLocalValue(iso: string | undefined): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+function serializeTraitConfig(g: Collection["genesisPassNft"]): string {
+  if (!g?.traitConfig) return "";
+  try {
+    return JSON.stringify(g.traitConfig, null, 2);
+  } catch {
+    return "";
+  }
+}
+
 export function GenesisPassNftConfigForm({ collection: c }: { collection: Collection }) {
   const g = c.genesisPassNft;
   const [state, action, pending] = useActionState<GenesisPassManageState, FormData>(
     updateGenesisPassNftConfig,
     genesisPassManageInitialState,
   );
-  const [showAdvanced, setShowAdvanced] = useState(!!g?.traitConfig);
+  const [traitDraft, setTraitDraft] = useState(() => serializeTraitConfig(g));
+  const [showHostedUri, setShowHostedUri] = useState(!!g?.traitConfigUri && !g?.traitConfig);
+  const [hostedUri, setHostedUri] = useState(g?.traitConfigUri ?? "");
+  const [traitFileHint, setTraitFileHint] = useState<string | null>(null);
+  const [placeholderUrl, setPlaceholderUrl] = useState(g?.placeholderImageUrl ?? "");
+  const [phBusy, setPhBusy] = useState(false);
+  const [phHint, setPhHint] = useState<string | null>(null);
 
-  const initialJson = useMemo(() => {
-    if (!g?.traitConfig) return "";
-    try {
-      return JSON.stringify(g.traitConfig, null, 2);
-    } catch {
-      return "";
+  const uploadPlaceholderImage = useCallback(async (file: File) => {
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("kind", "gallery");
+    const res = await fetch("/api/upload/collection-asset", { method: "POST", body: fd });
+    const data = (await res.json()) as { ok?: boolean; publicUrl?: string; error?: string };
+    if (!res.ok || !data.ok || !data.publicUrl) {
+      throw new Error(data.error ?? "Upload didn’t complete.");
     }
-  }, [g?.traitConfig]);
+    setPlaceholderUrl(data.publicUrl);
+  }, []);
+
+  useEffect(() => {
+    setTraitDraft(serializeTraitConfig(g));
+    setHostedUri(g?.traitConfigUri ?? "");
+    setShowHostedUri(!!g?.traitConfigUri && !g?.traitConfig);
+    setPlaceholderUrl(g?.placeholderImageUrl ?? "");
+  }, [g?.traitConfig, g?.traitConfigUri, g?.placeholderImageUrl, c.slug]);
+
+  useEffect(() => {
+    if (state.ok && state.message) {
+      setPhHint(null);
+      setTraitFileHint(null);
+    }
+  }, [state.ok, state.message]);
+
+  const inputClass = "w-full rounded-xl border border-line bg-black/30 px-3 py-2 text-sm text-white";
+  const textareaClass =
+    "w-full min-h-[240px] rounded-xl border border-line bg-black/30 px-3 py-2 font-mono text-[11px] leading-relaxed text-white";
 
   return (
-    <div className="rounded-2xl border border-line bg-panel/40 p-5 sm:p-6">
+    <div id="genesis-pass-traits" className="rounded-2xl border border-line bg-panel/40 p-5 sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent">Generative Genesis Pass</p>
           <h2 className="mt-1 font-display text-lg font-semibold text-white">Trait config & reveal</h2>
           <p className="mt-2 max-w-2xl text-xs leading-relaxed text-muted">
-            Off-chain display only — does not change MintReceipt, claims, or holder math. Point{" "}
-            <code className="rounded bg-black/40 px-1 py-0.5 font-mono text-[10px]">traitConfigUri</code> at a hosted{" "}
-            <code className="rounded bg-black/40 px-1 py-0.5 font-mono text-[10px]">trait-config.json</code> (see repo
-            schema). Optional reveal time hides generative traits until then. Add a{" "}
-            <code className="rounded bg-black/40 px-1 py-0.5 font-mono text-[10px]">rarityListingUrl</code> for RareNFT,
-            MoonRank, HowRare, or your own rankings page — mint/launch pages show it as a link only.
+            Off-chain display only — does not change MintReceipt, claims, or holder math. Trait rules are stored on this
+            launch when you paste or load JSON below (no external link required). Optional reveal time hides
+            generative traits until then. Add a rarity listing URL for RareNFT, MoonRank, HowRare, or your own rankings
+            page — mint and launch pages show it as a link only.
           </p>
         </div>
       </div>
@@ -70,7 +104,7 @@ export function GenesisPassNftConfigForm({ collection: c }: { collection: Collec
             type="datetime-local"
             name="revealAtLocal"
             defaultValue={toDatetimeLocalValue(g?.revealAt)}
-            className="w-full max-w-md rounded-xl border border-line bg-black/30 px-3 py-2 text-sm text-white"
+            className={`${inputClass} max-w-md`}
           />
         </label>
         <label className="flex items-center gap-2 text-xs text-muted">
@@ -78,38 +112,74 @@ export function GenesisPassNftConfigForm({ collection: c }: { collection: Collec
           Clear reveal schedule (always show generative metadata when trait config exists)
         </label>
 
-        <label className="block space-y-1.5">
-          <span className="text-[11px] font-medium uppercase tracking-wider text-muted">Placeholder image (https)</span>
+        <div className="space-y-1.5">
+          <label htmlFor={`placeholder-url-${c.slug}`} className="block text-[11px] font-medium uppercase tracking-wider text-muted">
+            Placeholder while unrevealed (upload or paste https)
+          </label>
+          {phHint ? <p className="text-xs text-rose-300">{phHint}</p> : null}
           <input
-            type="url"
+            id={`placeholder-url-${c.slug}`}
+            type="text"
             name="placeholderImageUrl"
-            defaultValue={g?.placeholderImageUrl ?? ""}
-            placeholder="https://…"
-            className="w-full rounded-xl border border-line bg-black/30 px-3 py-2 text-sm text-white"
+            value={placeholderUrl}
+            onChange={(e) => setPlaceholderUrl(e.target.value)}
+            placeholder="https://… or upload an image"
+            className={inputClass}
           />
-        </label>
-
-        <label className="block space-y-1.5">
-          <span className="text-[11px] font-medium uppercase tracking-wider text-muted">Trait config URI (https)</span>
-          <input
-            type="url"
-            name="traitConfigUri"
-            defaultValue={g?.traitConfigUri ?? ""}
-            placeholder="https://…/trait-config.json"
-            className="w-full rounded-xl border border-line bg-black/30 px-3 py-2 text-sm text-white"
-          />
-        </label>
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <input
+              id={`placeholder-file-${c.slug}`}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className="sr-only"
+              disabled={pending || phBusy}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                e.target.value = "";
+                if (!f) return;
+                setPhHint(null);
+                void (async () => {
+                  setPhBusy(true);
+                  try {
+                    await uploadPlaceholderImage(f);
+                  } catch (err) {
+                    setPhHint(err instanceof Error ? err.message : "Upload failed.");
+                  } finally {
+                    setPhBusy(false);
+                  }
+                })();
+              }}
+            />
+            <label
+              htmlFor={`placeholder-file-${c.slug}`}
+              className={`inline-flex cursor-pointer rounded-lg border border-line bg-black/30 px-3 py-1.5 text-[11px] font-medium text-white/90 hover:bg-black/50 ${
+                pending || phBusy ? "pointer-events-none opacity-50" : ""
+              }`}
+            >
+              {phBusy ? "Uploading…" : "Upload placeholder image"}
+            </label>
+            {placeholderUrl ? (
+              <button
+                type="button"
+                onClick={() => setPlaceholderUrl("")}
+                className="text-[11px] font-medium text-muted underline-offset-2 hover:text-white hover:underline"
+              >
+                Clear URL
+              </button>
+            ) : null}
+          </div>
+        </div>
 
         <label className="block space-y-1.5">
           <span className="text-[11px] font-medium uppercase tracking-wider text-muted">
             Rarity listing URL (https) — RareNFT, MoonRank, HowRare, …
           </span>
           <input
-            type="url"
+            type="text"
             name="rarityListingUrl"
             defaultValue={g?.rarityListingUrl ?? ""}
             placeholder="https://…"
-            className="w-full rounded-xl border border-line bg-black/30 px-3 py-2 text-sm text-white"
+            className={inputClass}
           />
         </label>
 
@@ -124,30 +194,94 @@ export function GenesisPassNftConfigForm({ collection: c }: { collection: Collec
           Allow dynamic metadata URL after reveal (prefer pinning + Core URI update for production)
         </label>
 
+        <div className="space-y-1.5 border-t border-white/10 pt-4">
+          {traitFileHint ? <p className="text-xs text-rose-300">{traitFileHint}</p> : null}
+          <span className="block text-[11px] font-medium uppercase tracking-wider text-muted">
+            Trait config JSON (saved on this launch)
+          </span>
+          <textarea
+            name="traitConfigJson"
+            value={traitDraft}
+            onChange={(e) => setTraitDraft(e.target.value)}
+            spellCheck={false}
+            placeholder='{ "schemaVersion": 1, "width": 1200, "height": 1200, "layers": [ … ] }'
+            className={textareaClass}
+          />
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              id={`trait-file-${c.slug}`}
+              type="file"
+              accept=".json,application/json"
+              className="sr-only"
+              disabled={pending}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                e.target.value = "";
+                if (!f) return;
+                setTraitFileHint(null);
+                void f.text().then(
+                  (text) => {
+                    try {
+                      JSON.parse(text);
+                      setTraitDraft(text);
+                    } catch {
+                      setTraitFileHint("That file is not valid JSON.");
+                    }
+                  },
+                  () => setTraitFileHint("Could not read the file."),
+                );
+              }}
+            />
+            <label
+              htmlFor={`trait-file-${c.slug}`}
+              className={`inline-flex cursor-pointer rounded-lg border border-line bg-black/30 px-3 py-1.5 text-[11px] font-medium text-white/90 hover:bg-black/50 ${
+                pending ? "pointer-events-none opacity-50" : ""
+              }`}
+            >
+              Load JSON file
+            </label>
+            {traitDraft ? (
+              <button
+                type="button"
+                onClick={() => setTraitDraft("")}
+                className="text-[11px] font-medium text-muted underline-offset-2 hover:text-white hover:underline"
+              >
+                Clear JSON
+              </button>
+            ) : null}
+          </div>
+          <label className="mt-2 flex items-center gap-2 text-xs text-muted">
+            <input type="checkbox" name="clearInlineTraitConfig" value="1" className="rounded border-line" />
+            Remove saved inline JSON (use hosted URL only, if configured below)
+          </label>
+        </div>
+
         <button
           type="button"
-          onClick={() => setShowAdvanced((v) => !v)}
+          onClick={() => setShowHostedUri((v) => !v)}
           className="text-xs font-medium text-accent underline-offset-2 hover:underline"
         >
-          {showAdvanced ? "Hide advanced" : "Advanced · inline trait JSON"}
+          {showHostedUri ? "Hide" : "Optional:"} hosted trait-config.json URL (CDN / pinning)
         </button>
 
-        {showAdvanced ? (
+        {hostedUri.trim() !== "" && !showHostedUri ? (
+          <input type="hidden" name="traitConfigUri" value={hostedUri} />
+        ) : null}
+
+        {showHostedUri ? (
           <label className="block space-y-1.5">
-            <span className="text-[11px] font-medium uppercase tracking-wider text-muted">
-              Inline trait config (optional, validated server-side)
-            </span>
-            <textarea
-              name="traitConfigJson"
-              rows={10}
-              defaultValue={initialJson}
-              placeholder='{ "schemaVersion": 1, "width": 1200, "height": 1200, "layers": […] }'
-              className="w-full rounded-xl border border-line bg-black/30 px-3 py-2 font-mono text-[11px] text-white"
+            <span className="text-[11px] font-medium uppercase tracking-wider text-muted">Trait config URL (https)</span>
+            <input
+              type="text"
+              name="traitConfigUri"
+              value={hostedUri}
+              onChange={(e) => setHostedUri(e.target.value)}
+              placeholder="https://…/trait-config.json"
+              className={inputClass}
             />
-            <label className="mt-2 flex items-center gap-2 text-xs text-muted">
-              <input type="checkbox" name="clearInlineTraitConfig" value="1" className="rounded border-line" />
-              Remove inline JSON (keep URI only)
-            </label>
+            <p className="text-[10px] text-muted">
+              If both URL and inline JSON are provided, inline JSON is saved and the URL is cleared.
+            </p>
           </label>
         ) : null}
 

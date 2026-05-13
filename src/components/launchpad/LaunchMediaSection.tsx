@@ -15,8 +15,8 @@ export type LaunchMediaSectionParts = {
   gallery?: boolean;
   social?: boolean;
   /**
-   * One bordered block: title “Token metadata”, DEXScreener-oriented banner + token uploads,
-   * then listing preview. Use with `banner` + `logo` true.
+   * One bordered block: title “Token metadata”, banner + token uploads, then listing preview.
+   * Use with `banner` + `logo` true.
    */
   tokenMetadataCard?: boolean;
 };
@@ -87,12 +87,12 @@ export function LaunchMediaSection({
       name="bannerUrl"
       label={
         show.tokenMetadataCard
-          ? "DEXScreener / listing banner"
+          ? "Listing banner"
           : "Banner (token & listing metadata)"
       }
       description={
         show.tokenMetadataCard
-          ? "Wide strip for DEXScreener-style pair pages, Geckoterminal, and on-chain metadata (~3:1). Not Genesis Pass artwork — use NFT art below."
+          ? "Wide strip (~3:1) for charts, explorers, and on-chain token metadata. Not Genesis Pass artwork — use NFT art below."
           : "Wide hero for /project, mint UI, and on-chain token / collection metadata (~3:1, center-cropped). Not your Genesis Pass image — use NFT art below for pass artwork."
       }
       aspectClass="aspect-[21/9] min-h-[140px]"
@@ -153,8 +153,8 @@ export function LaunchMediaSection({
           <div>
             <h3 className="text-sm font-semibold text-white">Token metadata</h3>
             <p className="mt-1 text-[11px] leading-relaxed text-muted">
-              Banner and icon are written to your launch record and SPL-style token JSON (DEXScreener, wallets, and this
-              site). Genesis Pass images are optional <span className="text-white/80">NFT art</span> in the next step.
+              Banner and icon are saved on your launch and in SPL-style token metadata (explorers, wallets, this site).
+              Genesis Pass images are optional <span className="text-white/80">NFT art</span> in the next step.
             </p>
           </div>
           {mediaGrid}
@@ -292,7 +292,7 @@ function TokenListingPreview({
         </div>
       </div>
       <p className="text-[10px] leading-snug text-muted">
-        Layout is approximate; DEXScreener, Geckoterminal, and wallets each render slightly differently.
+        Layout is approximate — charts, explorers, and wallets may crop differently.
       </p>
     </div>
   );

@@ -66,7 +66,7 @@ function topLevelSocialFields(
   return out;
 }
 
-/** DEXScreener-style link objects (alongside `extensions`). */
+/** Social / web link objects (alongside `extensions`). */
 function dexLinksFromSocial(
   social: TokenSocialLinks,
 ): Array<{ type: string; label: string; url: string }> {
@@ -183,7 +183,7 @@ export function buildTokenMetadataJson(
     description,
     image: imageField,
     external_url: social.website?.trim() || `${base}/project/${c.slug}`,
-    // Moonshot / pump.fun style fields many Solana indexers (incl. DEXScreener) surface.
+    // Moonshot / pump.fun style fields many Solana indexers surface.
     showName: true,
     createdOn: createdOnLabel(origin),
     properties: propsBase,

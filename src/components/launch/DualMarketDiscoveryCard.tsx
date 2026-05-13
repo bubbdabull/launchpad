@@ -65,7 +65,7 @@ export function DualMarketDiscoveryCard({ collection: c, variant = "full" }: Pro
   const sym = c.tokenSymbol ?? "TOKEN";
   const jupToken = `https://jup.ag/tokens/${mint}`;
   const jupSwap = `https://jup.ag/swap/So11111111111111111111111111111111111111112-${mint}`;
-  const dexscreener = `https://dexscreener.com/solana/${mint}`;
+  const pairChartUrl = `https://dexscreener.com/solana/${mint}`;
 
   if (variant === "compact") {
     return (
@@ -102,7 +102,7 @@ export function DualMarketDiscoveryCard({ collection: c, variant = "full" }: Pro
         <div className="rounded-xl border border-line/70 bg-black/25 p-4">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-white/70">${sym} (SPL)</p>
           <p className="mt-2 text-[11px] leading-relaxed text-muted">
-            Share the mint so people can swap on Jupiter and track on Dexscreener after DAMM / router liquidity exists.
+            Share the mint so people can swap on Jupiter and open price charts after DAMM / router liquidity exists.
           </p>
           <div className="mt-3 space-y-2">
             <div>
@@ -125,7 +125,7 @@ export function DualMarketDiscoveryCard({ collection: c, variant = "full" }: Pro
           <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1.5 border-t border-white/[0.06] pt-3">
             <LinkOut href={jupToken}>Jupiter · token page</LinkOut>
             <LinkOut href={jupSwap}>Jupiter · swap from SOL</LinkOut>
-            <LinkOut href={dexscreener}>Dexscreener</LinkOut>
+            <LinkOut href={pairChartUrl}>Price chart</LinkOut>
             <LinkOut href={explorerUrl("address", mint)}>Solscan · mint</LinkOut>
             {vault ? <LinkOut href={explorerUrl("address", vault)}>Solscan · vault</LinkOut> : null}
           </div>

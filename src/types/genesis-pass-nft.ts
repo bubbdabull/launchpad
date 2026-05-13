@@ -9,9 +9,9 @@ export type GenesisPassNftConfig = {
   revealAt?: string;
   /** Placeholder image (https) served as `image` while unrevealed. */
   placeholderImageUrl?: string;
-  /** Optional https URL to a `trait-config.json` document (see `src/lib/nft-generation/schema/`). */
+  /** Optional https URL to a `trait-config.json` document (CDN / pinning). Ignored when `traitConfig` is set. */
   traitConfigUri?: string;
-  /** Inline trait config for small demos (prefer `traitConfigUri` in production). */
+  /** Trait rules stored on the launch (`collections.genesis_pass_config`). Preferred over `traitConfigUri`. */
   traitConfig?: TraitCollectionConfig;
   /**
    * Optional https link to a rarity / rankings page (RareNFT, MoonRank, HowRare, custom sheet, etc.).
