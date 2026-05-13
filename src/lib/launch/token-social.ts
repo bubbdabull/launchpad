@@ -4,9 +4,10 @@ export type TokenSocialLinks = {
   twitter?: string;
   discord?: string;
   telegram?: string;
+  tiktok?: string;
 };
 
-const KEYS = ["website", "twitter", "discord", "telegram"] as const;
+const KEYS = ["website", "twitter", "discord", "telegram", "tiktok"] as const;
 
 export function emptyTokenSocialLinks(): TokenSocialLinks {
   return {};
@@ -33,11 +34,13 @@ export function tokenSocialLinksFromForm(form: FormData): TokenSocialLinks {
   const twitter = String(form.get("socialTwitter") ?? "").trim();
   const discord = String(form.get("socialDiscord") ?? "").trim();
   const telegram = String(form.get("socialTelegram") ?? "").trim();
+  const tiktok = String(form.get("socialTiktok") ?? "").trim();
   const out: TokenSocialLinks = {};
   if (website) out.website = website;
   if (twitter) out.twitter = twitter;
   if (discord) out.discord = discord;
   if (telegram) out.telegram = telegram;
+  if (tiktok) out.tiktok = tiktok;
   return out;
 }
 

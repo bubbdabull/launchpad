@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 
 import {
   launchManageInitialState,
@@ -9,7 +9,7 @@ import {
   type LaunchManageState,
 } from "@/app/project/[slug]/manage/actions";
 import { LaunchMediaSection } from "@/components/launchpad/LaunchMediaSection";
-import { serializeTokenMetadataProfile, type TokenMetadataProfile } from "@/lib/launch/token-metadata-profile";
+import { serializeTokenMetadataProfile } from "@/lib/launch/token-metadata-profile";
 import type { Collection } from "@/types/collection";
 
 const CATEGORIES: Array<{ key: string; label: string }> = [
@@ -58,9 +58,19 @@ export function LaunchSettingsForm({
   const [socialTwitter, setSocialTwitter] = useState(c.tokenSocialLinks?.twitter ?? "");
   const [socialDiscord, setSocialDiscord] = useState(c.tokenSocialLinks?.discord ?? "");
   const [socialTelegram, setSocialTelegram] = useState(c.tokenSocialLinks?.telegram ?? "");
-  const [metaProfile, setMetaProfile] = useState<TokenMetadataProfile>(() => ({
-    ...(c.tokenMetadataProfile ?? {}),
-  }));
+  const [socialTiktok, setSocialTiktok] = useState(
+    c.tokenSocialLinks?.tiktok ?? c.tokenMetadataProfile?.tiktok ?? "",
+  );
+
+  const tokenMetadataProfileHidden = useMemo(() => {
+    const p = c.tokenMetadataProfile ?? {};
+    return JSON.stringify(
+      serializeTokenMetadataProfile({
+        posterImageUrl: p.posterImageUrl,
+        animationUrl: p.animationUrl,
+      }),
+    );
+  }, [c.tokenMetadataProfile?.posterImageUrl, c.tokenMetadataProfile?.animationUrl]);
   const [quoteAsset, setQuoteAsset] = useState<"SOL" | "USDC">(c.quoteAsset === "USDC" ? "USDC" : "SOL");
   const [sliceBPct, setSliceBPct] = useState(c.sliceBPct ?? 0);
   const [sliceBCreatorSharePct, setSliceBCreatorSharePct] = useState(c.sliceBCreatorSharePct ?? 50);
@@ -86,11 +96,7 @@ export function LaunchSettingsForm({
       <form action={action} className="space-y-8 rounded-2xl border border-line bg-panel/40 p-6">
         <input type="hidden" name="slug" value={c.slug} />
         <input type="hidden" name="nftGalleryUrls" value={JSON.stringify(galleryUrls)} />
-        <input
-          type="hidden"
-          name="tokenMetadataProfile"
-          value={JSON.stringify(serializeTokenMetadataProfile(metaProfile))}
-        />
+        <input type="hidden" name="tokenMetadataProfile" value={tokenMetadataProfileHidden} />
 
         <section className="space-y-5">
           <SectionHeader
@@ -126,22 +132,23 @@ export function LaunchSettingsForm({
           </Field>
           <LaunchMediaSection
             variant="manage"
+            parts={{ intro: false }}
             galleryUrls={galleryUrls}
             setGalleryUrls={setGalleryUrls}
             bannerUrl={bannerUrl}
             logoUrl={logoUrl}
             onBannerUrlChange={setBannerUrl}
             onLogoUrlChange={setLogoUrl}
-            metaProfile={metaProfile}
-            onMetaProfileChange={setMetaProfile}
             socialWebsite={socialWebsite}
             socialTwitter={socialTwitter}
             socialDiscord={socialDiscord}
             socialTelegram={socialTelegram}
+            socialTiktok={socialTiktok}
             onSocialWebsite={setSocialWebsite}
             onSocialTwitter={setSocialTwitter}
             onSocialDiscord={setSocialDiscord}
             onSocialTelegram={setSocialTelegram}
+            onSocialTiktok={setSocialTiktok}
           />
         </section>
 

@@ -17,7 +17,6 @@ import {
   tradingTaxPctLabel,
 } from "@/lib/launch/trading-tax-protocol";
 import { HERO_LAYOUTS, isValidAccentColor } from "@/lib/launch/project-page";
-import { serializeTokenMetadataProfile, type TokenMetadataProfile } from "@/lib/launch/token-metadata-profile";
 
 import { LaunchMediaSection } from "./LaunchMediaSection";
 
@@ -174,11 +173,11 @@ export function CreateLaunchForm() {
   const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
   const [bannerUrl, setBannerUrl] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
-  const [metaProfile, setMetaProfile] = useState<TokenMetadataProfile>({});
   const [socialWebsite, setSocialWebsite] = useState("");
   const [socialTwitter, setSocialTwitter] = useState("");
   const [socialDiscord, setSocialDiscord] = useState("");
   const [socialTelegram, setSocialTelegram] = useState("");
+  const [socialTiktok, setSocialTiktok] = useState("");
 
   const [projectAccentColor, setProjectAccentColor] = useState("");
   const [projectHeroLayout, setProjectHeroLayout] = useState<string>("classic");
@@ -271,12 +270,22 @@ export function CreateLaunchForm() {
         const l = logoUrl.trim();
         if (!b || !l) {
           e.preventDefault();
-          setSubmitHint("Banner and logo are required — upload or paste an https:// link for each.");
+          setSubmitHint(
+            !l && !b
+              ? "Add a token logo (metadata, step 01) and a banner (metadata, step 02) — upload or paste an https:// link for each."
+              : !l
+                ? "Add a token logo (metadata) in step 01 (upload or https link)."
+                : "Add a banner (metadata) in step 02 (upload or https link).",
+          );
           return;
         }
         if (!/^https:\/\//i.test(b) || !/^https:\/\//i.test(l)) {
           e.preventDefault();
-          setSubmitHint("Banner and logo must be full https:// URLs.");
+          setSubmitHint(
+            !/^https:\/\//i.test(l)
+              ? "Token logo (metadata) in step 01 must be a full https:// URL."
+              : "Banner (metadata) in step 02 must be a full https:// URL.",
+          );
           return;
         }
         const ac = projectAccentColor.trim();
@@ -300,8 +309,8 @@ export function CreateLaunchForm() {
 
       <Section
         step="01"
-        title="Launch identity & token"
-        subtitle="Name, slug, SPL symbol, and copy for listings and metadata."
+        title="Launch identity, token & wallet metadata"
+        subtitle="Names, SPL symbol, listing copy, the token logo (SPL / explorer metadata — not pass artwork), and optional links for wallets and explorers. NFT / pass images go under NFT art in step 02."
       >
         <div className="grid gap-5 sm:grid-cols-2">
           <div className="space-y-2">
@@ -391,46 +400,140 @@ export function CreateLaunchForm() {
             onChange={(e) => setUtilities(e.target.value)}
           />
         </div>
-      </Section>
 
-      <Section
-        step="02"
-        title="NFT & token art (https only)"
-        subtitle="Upload to our bucket or paste Supabase / CDN links. Metaplex and the site require stable https URLs — same format you will use on-chain metadata."
-      >
         <p className="text-[12px] leading-relaxed text-muted">
-          <span className="font-medium text-amber-200/90">Required:</span>{" "}
-          <span className="font-medium text-white/90">banner</span> and{" "}
-          <span className="font-medium text-white/90">logo</span> must both be set (upload or https paste) before you
-          can publish — same URLs are used for Metaplex token metadata and the site. They are resized server-side for
-          predictable dimensions. <span className="font-medium text-white/90">Gallery</span> is optional extra art on
-          /project.
+          <span className="font-medium text-amber-200/90">Required before publish:</span>{" "}
+          <span className="font-medium text-white/90">Token logo (metadata)</span> below — SPL / listing icon, not your
+          Genesis Pass art (that is step 02, NFT art). Same URL is stored for Metaplex token / collection metadata.
         </p>
         <LaunchMediaSection
           variant="create"
+          parts={{
+            intro: false,
+            banner: false,
+            gallery: false,
+            logo: true,
+            social: true,
+          }}
           galleryUrls={galleryUrls}
           setGalleryUrls={setGalleryUrls}
           bannerUrl={bannerUrl}
           logoUrl={logoUrl}
           onBannerUrlChange={setBannerUrl}
           onLogoUrlChange={setLogoUrl}
-          metaProfile={metaProfile}
-          onMetaProfileChange={setMetaProfile}
           socialWebsite={socialWebsite}
           socialTwitter={socialTwitter}
           socialDiscord={socialDiscord}
           socialTelegram={socialTelegram}
+          socialTiktok={socialTiktok}
           onSocialWebsite={setSocialWebsite}
           onSocialTwitter={setSocialTwitter}
           onSocialDiscord={setSocialDiscord}
           onSocialTelegram={setSocialTelegram}
+          onSocialTiktok={setSocialTiktok}
+        />
+        <input type="hidden" name="tokenMetadataProfile" value="{}" />
+      </Section>
+
+      <Section
+        step="02"
+        title="Metadata banner, NFT art & generative"
+        subtitle="Banner is for token and listing metadata (same family as the token logo in step 01). Upload Genesis Pass / collection art under NFT art. Optional trait-config / rarity URLs follow."
+      >
+        <p className="text-[12px] leading-relaxed text-muted">
+          <span className="font-medium text-amber-200/90">Required before publish:</span>{" "}
+          <span className="font-medium text-white/90">Banner (metadata)</span> below — not pass artwork. Token logo
+          (metadata) is in step 01; optional <span className="font-medium text-white/90">NFT art</span> is in this step.
+        </p>
+        <LaunchMediaSection
+          variant="create"
+          introText="Banner = token / site metadata (wallets, explorers, listings). NFT art = your Genesis Pass or collection images — separate uploads below."
+          parts={{
+            intro: true,
+            banner: true,
+            gallery: true,
+            logo: false,
+            social: false,
+          }}
+          galleryUrls={galleryUrls}
+          setGalleryUrls={setGalleryUrls}
+          bannerUrl={bannerUrl}
+          logoUrl={logoUrl}
+          onBannerUrlChange={setBannerUrl}
+          onLogoUrlChange={setLogoUrl}
+          socialWebsite={socialWebsite}
+          socialTwitter={socialTwitter}
+          socialDiscord={socialDiscord}
+          socialTelegram={socialTelegram}
+          socialTiktok={socialTiktok}
+          onSocialWebsite={setSocialWebsite}
+          onSocialTwitter={setSocialTwitter}
+          onSocialDiscord={setSocialDiscord}
+          onSocialTelegram={setSocialTelegram}
+          onSocialTiktok={setSocialTiktok}
         />
         <input type="hidden" name="nftGalleryUrls" value={JSON.stringify(galleryUrls)} />
-        <input
-          type="hidden"
-          name="tokenMetadataProfile"
-          value={JSON.stringify(serializeTokenMetadataProfile(metaProfile))}
-        />
+
+        <div className="mt-8 space-y-4 rounded-2xl border border-white/[0.08] bg-black/25 p-5 sm:p-6">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent">Optional · generative variants</p>
+            <h3 className="mt-1 font-display text-base font-semibold text-white">Trait config &amp; rarity listings</h3>
+            <p className="mt-2 text-[11px] leading-relaxed text-muted">
+              Point <span className="font-mono text-[10px] text-white/90">trait-config.json</span> at a public https URL
+              (layers, weights, rules — see{" "}
+              <code className="rounded bg-black/40 px-1 font-mono text-[10px]">src/lib/nft-generation/schema/</code>).
+              Build assets with <span className="font-mono text-[10px] text-white/90">npm run generate:genesis</span>.
+              RareNFT / MoonRank / HowRare links are display-only for collectors.
+            </p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <FieldLabel htmlFor="genesis-trait-uri">Trait config URI (https)</FieldLabel>
+              <input
+                id="genesis-trait-uri"
+                type="url"
+                name="genesisTraitConfigUri"
+                placeholder="https://cdn…/trait-config.json"
+                className={inputClass}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <FieldLabel htmlFor="genesis-placeholder">Placeholder image while unrevealed (https)</FieldLabel>
+              <input
+                id="genesis-placeholder"
+                type="url"
+                name="genesisPlaceholderImageUrl"
+                placeholder="https://…/hidden.png"
+                className={inputClass}
+              />
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <FieldLabel htmlFor="genesis-reveal">Reveal at (local time, optional)</FieldLabel>
+              <input
+                id="genesis-reveal"
+                type="datetime-local"
+                name="genesisRevealAtLocal"
+                className={inputClass}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <FieldLabel htmlFor="genesis-rarity">Rarity page — RareNFT, MoonRank, HowRare… (https)</FieldLabel>
+              <input
+                id="genesis-rarity"
+                type="url"
+                name="genesisRarityListingUrl"
+                placeholder="https://rarenft… or your rankings sheet"
+                className={inputClass}
+              />
+            </div>
+          </div>
+          <label className="flex items-center gap-2 text-xs text-muted">
+            <input type="checkbox" name="genesisAllowDynamicPostReveal" value="1" className="rounded border-line" />
+            Allow dynamic metadata URL after reveal (advanced; prefer pinning for production)
+          </label>
+        </div>
       </Section>
 
       <Section

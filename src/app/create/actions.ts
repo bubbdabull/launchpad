@@ -18,6 +18,7 @@ import {
   validateTokenSocialLinks,
 } from "@/lib/launch/token-social";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import type { GenesisPassNftConfig } from "@/types/genesis-pass-nft";
 
 const slugRegex = /^[a-z0-9-]{3,64}$/;
 const SOLANA_ADDRESS_RE = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
@@ -81,6 +82,54 @@ function parseLamports(value: string): bigint | null {
   } catch {
     return null;
   }
+}
+
+function parseGenesisPassConfigForCreate(
+  form: FormData,
+): { ok: true; value: GenesisPassNftConfig | null } | { ok: false; message: string } {
+  const traitConfigUri = asText(form, "genesisTraitConfigUri");
+  const placeholderImageUrl = asText(form, "genesisPlaceholderImageUrl");
+  const rarityListingUrl = asText(form, "genesisRarityListingUrl");
+  const revealLocal = asText(form, "genesisRevealAtLocal");
+  const allowDynamic = asText(form, "genesisAllowDynamicPostReveal") === "1";
+
+  if (traitConfigUri && !isHttpsUrl(traitConfigUri)) {
+    return { ok: false, message: "Trait config URL must be a full https:// link." };
+  }
+  if (placeholderImageUrl && !isHttpsUrl(placeholderImageUrl)) {
+    return { ok: false, message: "Genesis placeholder image must be a full https:// link." };
+  }
+  if (rarityListingUrl && !isHttpsUrl(rarityListingUrl)) {
+    return {
+      ok: false,
+      message: "Rarity listing URL must be https (RareNFT, MoonRank, HowRare, or your own rankings page).",
+    };
+  }
+
+  const next: GenesisPassNftConfig = {};
+  if (traitConfigUri) next.traitConfigUri = traitConfigUri;
+  if (placeholderImageUrl) next.placeholderImageUrl = placeholderImageUrl;
+  if (rarityListingUrl) next.rarityListingUrl = rarityListingUrl;
+  if (allowDynamic) next.allowDynamicPostReveal = true;
+
+  if (revealLocal) {
+    const d = new Date(revealLocal);
+    if (!Number.isFinite(d.getTime())) {
+      return { ok: false, message: "Genesis reveal time is not a valid date." };
+    }
+    next.revealAt = d.toISOString();
+  }
+
+  if (
+    !next.traitConfigUri &&
+    !next.placeholderImageUrl &&
+    !next.rarityListingUrl &&
+    !next.revealAt &&
+    !next.allowDynamicPostReveal
+  ) {
+    return { ok: true, value: null };
+  }
+  return { ok: true, value: next };
 }
 
 export type CreateLaunchState = {
@@ -263,6 +312,9 @@ export async function createDraftCollection(
   const platformTreasuryError = ensureSolanaAddress(platformTreasury, "Platform treasury");
   if (platformTreasuryError) return { ok: false, message: platformTreasuryError };
 
+  const genesisParsed = parseGenesisPassConfigForCreate(form);
+  if (!genesisParsed.ok) return { ok: false, message: genesisParsed.message };
+
   const supabase = createServiceRoleClient();
   const { error } = await supabase.from("collections").insert({
     slug,
@@ -313,6 +365,7 @@ export async function createDraftCollection(
     hero_layout: heroLayoutForRow,
     project_headline: projectHeadlineRaw || null,
     project_subhead: projectSubheadRaw || null,
+    genesis_pass_config: genesisParsed.value,
   });
 
   if (error) return { ok: false, message: error.message };

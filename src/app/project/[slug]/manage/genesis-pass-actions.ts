@@ -32,6 +32,9 @@ function parseExisting(raw: unknown): GenesisPassNftConfig {
   if (typeof o.traitConfigUri === "string" && o.traitConfigUri.trim()) {
     out.traitConfigUri = o.traitConfigUri.trim();
   }
+  if (typeof o.rarityListingUrl === "string" && o.rarityListingUrl.trim()) {
+    out.rarityListingUrl = o.rarityListingUrl.trim();
+  }
   if (typeof o.allowDynamicPostReveal === "boolean") out.allowDynamicPostReveal = o.allowDynamicPostReveal;
   if (o.traitConfig != null && typeof o.traitConfig === "object" && !Array.isArray(o.traitConfig)) {
     try {
@@ -103,6 +106,12 @@ export async function updateGenesisPassNftConfig(
     return { ok: false, message: "Trait config URL must be https." };
   } else next.traitConfigUri = traitUri;
 
+  const rarityListing = asText(form, "rarityListingUrl");
+  if (!rarityListing) delete next.rarityListingUrl;
+  else if (!isHttpsUrl(rarityListing)) {
+    return { ok: false, message: "Rarity listing URL must be https." };
+  } else next.rarityListingUrl = rarityListing;
+
   if (asText(form, "allowDynamicPostReveal") === "1") next.allowDynamicPostReveal = true;
   else delete next.allowDynamicPostReveal;
 
@@ -124,6 +133,7 @@ export async function updateGenesisPassNftConfig(
     !next.placeholderImageUrl &&
     !next.traitConfigUri &&
     !next.traitConfig &&
+    !next.rarityListingUrl &&
     !next.allowDynamicPostReveal
   ) {
     const { error } = await supabase.from("collections").update({ genesis_pass_config: null }).eq("slug", slug);

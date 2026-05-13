@@ -14,6 +14,11 @@ export type GenesisPassNftConfig = {
   /** Inline trait config for small demos (prefer `traitConfigUri` in production). */
   traitConfig?: TraitCollectionConfig;
   /**
+   * Optional https link to a rarity / rankings page (RareNFT, MoonRank, HowRare, custom sheet, etc.).
+   * Shown on mint/launch when set; does not affect on-chain rolls.
+   */
+  rarityListingUrl?: string;
+  /**
    * When true, after reveal time the dynamic `/api/metadata/asset` response may still be used,
    * but creators are encouraged to call `update` on the Core asset to a **pinned** immutable URI.
    */

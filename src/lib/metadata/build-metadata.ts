@@ -17,45 +17,31 @@ function createdOnLabel(origin: string): string {
 
 const MAX_COMPOSED_DESCRIPTION = 7500;
 
-function mergeStringRecords(
-  a: Record<string, string> | undefined,
-  b: Record<string, string> | undefined,
-): Record<string, string> | undefined {
-  const merged = { ...(a ?? {}), ...(b ?? {}) };
-  return Object.keys(merged).length ? merged : undefined;
+/** Merge `token_social_links` with legacy `token_metadata_profile.tiktok` until rows are re-saved. */
+function socialForWalletMetadata(c: Collection): TokenSocialLinks {
+  const s = { ...(c.tokenSocialLinks ?? {}) };
+  const st = s.tiktok?.trim();
+  const legacy = c.tokenMetadataProfile?.tiktok?.trim();
+  if (!st && legacy) {
+    s.tiktok = legacy;
+  }
+  return s;
 }
 
 function compactExtensions(
   social: TokenSocialLinks,
 ): Record<string, string> | undefined {
   const out: Record<string, string> = {};
-  for (const k of ["website", "twitter", "discord", "telegram"] as const) {
+  for (const k of ["website", "twitter", "discord", "telegram", "tiktok"] as const) {
     const v = social[k]?.trim();
     if (v) out[k] = v;
   }
   return Object.keys(out).length ? out : undefined;
 }
 
-function profileExtensionStrings(
-  profile: TokenMetadataProfile | undefined,
-): Record<string, string> | undefined {
-  if (!profile) return undefined;
-  const out: Record<string, string> = {};
-  for (const k of ["github", "youtube", "tiktok"] as const) {
-    const v = profile[k]?.trim();
-    if (v) out[k] = v;
-  }
-  return Object.keys(out).length ? out : undefined;
-}
-
-/**
- * Appends optional story / roadmap / community blocks so DEX + wallet UIs
- * that render `description` get more context without replacing the main pitch.
- */
 function composeRichDescription(
   mainDescription: string,
   tagline: string | undefined,
-  profile: TokenMetadataProfile | undefined,
   /** When true, lead with tagline then blank line before the main body. */
   leadWithTagline: boolean,
 ): string {
@@ -65,13 +51,6 @@ function composeRichDescription(
   } else {
     parts.push(mainDescription.trim());
   }
-  const push = (title: string, body?: string) => {
-    const t = body?.trim();
-    if (t) parts.push("", title, t);
-  };
-  push("Story", profile?.story);
-  push("Roadmap", profile?.roadmap);
-  push("Community", profile?.community);
   return parts.join("\n").trim().slice(0, MAX_COMPOSED_DESCRIPTION);
 }
 
@@ -80,7 +59,7 @@ function topLevelSocialFields(
   social: TokenSocialLinks,
 ): Record<string, string> {
   const out: Record<string, string> = {};
-  for (const k of ["website", "twitter", "discord", "telegram"] as const) {
+  for (const k of ["website", "twitter", "discord", "telegram", "tiktok"] as const) {
     const v = social[k]?.trim();
     if (v) out[k] = v;
   }
@@ -96,22 +75,7 @@ function dexLinksFromSocial(
     ["twitter", "Twitter", social.twitter],
     ["discord", "Discord", social.discord],
     ["telegram", "Telegram", social.telegram],
-  ];
-  const links: Array<{ type: string; label: string; url: string }> = [];
-  for (const [type, label, url] of pairs) {
-    const u = url?.trim();
-    if (u) links.push({ type, label, url: u });
-  }
-  return links;
-}
-
-function dexLinksFromProfile(
-  profile: TokenMetadataProfile | undefined,
-): Array<{ type: string; label: string; url: string }> {
-  const pairs: Array<[string, string, string | undefined]> = [
-    ["github", "GitHub", profile?.github],
-    ["youtube", "YouTube", profile?.youtube],
-    ["tiktok", "TikTok", profile?.tiktok],
+    ["tiktok", "TikTok", social.tiktok],
   ];
   const links: Array<{ type: string; label: string; url: string }> = [];
   for (const [type, label, url] of pairs) {
@@ -145,18 +109,6 @@ function tokenDiscoveryAttributes(c: Collection): Array<{
     traits.push({
       trait_type: "Infra · DAMM pool",
       value: "Cached pubkey for explorers — not lifecycle or LaunchState",
-    });
-  }
-  const paired = (c.tokenMetadataProfile?.pairedNfts ?? []).filter((r) => {
-    const n = r.name?.trim();
-    const m = r.mint?.trim();
-    const i = r.image?.trim();
-    return Boolean(n || m || i);
-  });
-  if (paired.length > 0) {
-    traits.push({
-      trait_type: "Linked NFTs",
-      value: `${paired.length} in metadata`,
     });
   }
   return traits;
@@ -198,66 +150,6 @@ function filesFromGallery(
   return files;
 }
 
-/** Gallery + optional paired-NFT preview art (same token, multiple collection mints). */
-function filesFromGalleryAndPaired(
-  c: Collection,
-  origin: string,
-): Array<{ uri: string; type: string; cdn?: boolean }> {
-  const base = filesFromGallery(c, origin);
-  const seen = new Set(base.map((f) => f.uri));
-  const profile = c.tokenMetadataProfile;
-  for (const p of profile?.pairedNfts ?? []) {
-    const u = p.image?.trim();
-    if (!u) continue;
-    const abs = absoluteUrl(u, origin);
-    if (seen.has(abs)) continue;
-    seen.add(abs);
-    base.push({ uri: abs, type: mimeFromUri(abs) });
-  }
-  return base;
-}
-
-function pairedNftsPropertyBlock(
-  profile: TokenMetadataProfile | undefined,
-  origin: string,
-): Array<{ name?: string; mint?: string; uri?: string }> | undefined {
-  const rows = profile?.pairedNfts?.filter((r) => {
-    const n = r.name?.trim();
-    const m = r.mint?.trim();
-    const i = r.image?.trim();
-    return Boolean(n || m || i);
-  });
-  if (!rows?.length) return undefined;
-  return rows.map((r) => {
-    const name = r.name?.trim() || undefined;
-    const mint = r.mint?.trim() || undefined;
-    const img = r.image?.trim();
-    const uri = img ? absoluteUrl(img, origin) : undefined;
-    const o: { name?: string; mint?: string; uri?: string } = {};
-    if (name) o.name = name;
-    if (mint) o.mint = mint;
-    if (uri) o.uri = uri;
-    return o;
-  });
-}
-
-function dexLinksFromPairedMints(
-  profile: TokenMetadataProfile | undefined,
-): Array<{ type: string; label: string; url: string }> {
-  const links: Array<{ type: string; label: string; url: string }> = [];
-  for (const p of profile?.pairedNfts ?? []) {
-    const m = p.mint?.trim();
-    if (!m) continue;
-    const label = p.name?.trim() || "NFT";
-    links.push({
-      type: "nft_mint",
-      label,
-      url: `https://solscan.io/token/${m}`,
-    });
-  }
-  return links;
-}
-
 /**
  * Fungible token JSON for Meteora / SPL metadata URI (`/api/metadata/token/[slug]`).
  */
@@ -265,31 +157,21 @@ export function buildTokenMetadataJson(
   c: Collection,
   origin: string,
 ): Record<string, unknown> {
-  const social = c.tokenSocialLinks ?? {};
+  const social = socialForWalletMetadata(c);
   const profile = c.tokenMetadataProfile;
-  const files = filesFromGalleryAndPaired(c, origin);
+  const files = filesFromGallery(c, origin);
   const base = origin.replace(/\/$/, "");
-  const extensions = mergeStringRecords(
-    compactExtensions(social),
-    profileExtensionStrings(profile),
-  );
-  const links = [
-    ...dexLinksFromSocial(social),
-    ...dexLinksFromProfile(profile),
-    ...dexLinksFromPairedMints(profile),
-  ];
+  const extensions = compactExtensions(social);
+  const links = dexLinksFromSocial(social);
   const topSocial = topLevelSocialFields(social);
-  const topProfile = profileExtensionStrings(profile) ?? {};
   const bannerAbs = c.bannerUrl ? absoluteUrl(c.bannerUrl, origin) : undefined;
   const logoAbs = c.logoUrl ? absoluteUrl(c.logoUrl, origin) : undefined;
-  const description = composeRichDescription(c.description, undefined, profile, false);
+  const description = composeRichDescription(c.description, undefined, false);
 
-  const pairedBlock = pairedNftsPropertyBlock(profile, origin);
   const propsBase: Record<string, unknown> = {
     category: "image",
     files,
   };
-  if (pairedBlock?.length) propsBase.paired_nfts = pairedBlock;
 
   const poster = profile?.posterImageUrl?.trim();
   const anim = profile?.animationUrl?.trim();
@@ -307,7 +189,6 @@ export function buildTokenMetadataJson(
     properties: propsBase,
     attributes: tokenDiscoveryAttributes(c),
     ...topSocial,
-    ...topProfile,
   };
 
   if (c.utilities?.length) {
@@ -334,29 +215,18 @@ export function buildCollectionMetadataJson(
   c: Collection,
   origin: string,
 ): Record<string, unknown> {
-  const social = c.tokenSocialLinks ?? {};
-  const profile = c.tokenMetadataProfile;
-  const files = filesFromGalleryAndPaired(c, origin);
+  const social = socialForWalletMetadata(c);
+  const files = filesFromGallery(c, origin);
   const base = origin.replace(/\/$/, "");
-  const extensions = mergeStringRecords(
-    compactExtensions(social),
-    profileExtensionStrings(profile),
-  );
-  const links = [
-    ...dexLinksFromSocial(social),
-    ...dexLinksFromProfile(profile),
-    ...dexLinksFromPairedMints(profile),
-  ];
+  const extensions = compactExtensions(social);
+  const links = dexLinksFromSocial(social);
   const topSocial = topLevelSocialFields(social);
-  const topProfile = profileExtensionStrings(profile) ?? {};
   const bannerAbs = c.bannerUrl ? absoluteUrl(c.bannerUrl, origin) : undefined;
   const logoAbs = c.logoUrl ? absoluteUrl(c.logoUrl, origin) : undefined;
   const image = primaryImageUrl(c, origin);
-  const description = composeRichDescription(c.description, c.tagline, profile, true);
+  const description = composeRichDescription(c.description, c.tagline, true);
 
-  const pairedCol = pairedNftsPropertyBlock(profile, origin);
   const propsCol: Record<string, unknown> = { category: "image", files };
-  if (pairedCol?.length) propsCol.paired_nfts = pairedCol;
 
   const out: Record<string, unknown> = {
     name: `${c.name} — Genesis Pass`,
@@ -369,7 +239,6 @@ export function buildCollectionMetadataJson(
     properties: propsCol,
     attributes: tokenDiscoveryAttributes(c),
     ...topSocial,
-    ...topProfile,
   };
   if (c.utilities?.length) {
     out.tags = c.utilities.slice(0, 24);
@@ -391,25 +260,16 @@ export function buildAssetMetadataJson(input: {
   chainAttributes: Array<{ trait_type?: string; value?: string }>;
 }): Record<string, unknown> {
   const { collection: c, origin, assetName, chainAttributes } = input;
-  const social = c.tokenSocialLinks ?? {};
-  const profile = c.tokenMetadataProfile;
-  const files = filesFromGalleryAndPaired(c, origin);
+  const social = socialForWalletMetadata(c);
+  const files = filesFromGallery(c, origin);
   const base = origin.replace(/\/$/, "");
-  const extensions = mergeStringRecords(
-    compactExtensions(social),
-    profileExtensionStrings(profile),
-  );
-  const links = [
-    ...dexLinksFromSocial(social),
-    ...dexLinksFromProfile(profile),
-    ...dexLinksFromPairedMints(profile),
-  ];
+  const extensions = compactExtensions(social);
+  const links = dexLinksFromSocial(social);
   const topSocial = topLevelSocialFields(social);
-  const topProfile = profileExtensionStrings(profile) ?? {};
   const bannerAbs = c.bannerUrl ? absoluteUrl(c.bannerUrl, origin) : undefined;
   const logoAbs = c.logoUrl ? absoluteUrl(c.logoUrl, origin) : undefined;
   const image = primaryImageUrl(c, origin);
-  const description = composeRichDescription(c.description, undefined, profile, false);
+  const description = composeRichDescription(c.description, undefined, false);
 
   const attributes = [
     ...chainAttributes,
@@ -417,9 +277,7 @@ export function buildAssetMetadataJson(input: {
     { trait_type: "Launch", value: c.slug },
   ];
 
-  const pairedAsset = pairedNftsPropertyBlock(profile, origin);
   const propsAsset: Record<string, unknown> = { category: "image", files };
-  if (pairedAsset?.length) propsAsset.paired_nfts = pairedAsset;
 
   const out: Record<string, unknown> = {
     name: assetName,
@@ -432,7 +290,6 @@ export function buildAssetMetadataJson(input: {
     attributes,
     properties: propsAsset,
     ...topSocial,
-    ...topProfile,
   };
   if (c.utilities?.length) {
     out.tags = c.utilities.slice(0, 24);

@@ -44,7 +44,9 @@ export function GenesisPassNftConfigForm({ collection: c }: { collection: Collec
             Off-chain display only — does not change MintReceipt, claims, or holder math. Point{" "}
             <code className="rounded bg-black/40 px-1 py-0.5 font-mono text-[10px]">traitConfigUri</code> at a hosted{" "}
             <code className="rounded bg-black/40 px-1 py-0.5 font-mono text-[10px]">trait-config.json</code> (see repo
-            example). Optional reveal time hides generative traits in metadata until then.
+            schema). Optional reveal time hides generative traits until then. Add a{" "}
+            <code className="rounded bg-black/40 px-1 py-0.5 font-mono text-[10px]">rarityListingUrl</code> for RareNFT,
+            MoonRank, HowRare, or your own rankings page — mint/launch pages show it as a link only.
           </p>
         </div>
       </div>
@@ -94,6 +96,19 @@ export function GenesisPassNftConfigForm({ collection: c }: { collection: Collec
             name="traitConfigUri"
             defaultValue={g?.traitConfigUri ?? ""}
             placeholder="https://…/trait-config.json"
+            className="w-full rounded-xl border border-line bg-black/30 px-3 py-2 text-sm text-white"
+          />
+        </label>
+
+        <label className="block space-y-1.5">
+          <span className="text-[11px] font-medium uppercase tracking-wider text-muted">
+            Rarity listing URL (https) — RareNFT, MoonRank, HowRare, …
+          </span>
+          <input
+            type="url"
+            name="rarityListingUrl"
+            defaultValue={g?.rarityListingUrl ?? ""}
+            placeholder="https://…"
             className="w-full rounded-xl border border-line bg-black/30 px-3 py-2 text-sm text-white"
           />
         </label>

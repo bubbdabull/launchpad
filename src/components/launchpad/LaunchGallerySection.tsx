@@ -55,11 +55,12 @@ export function LaunchGallerySection({ galleryUrls, setGalleryUrls }: Props) {
   return (
     <div className="space-y-4 rounded-xl border border-line bg-panel/30 p-4">
       <div>
-        <h3 className="text-sm font-semibold text-white">Gallery &amp; extras</h3>
+        <h3 className="text-sm font-semibold text-white">NFT art</h3>
         <p className="mt-1 text-[11px] leading-relaxed text-muted">
-          File uploads are normalized to{" "}
+          Genesis Pass / collection artwork and stills (not the token logo or banner — those are metadata images above).
+          Uploads normalize to{" "}
           <span className="font-mono text-[10px] text-accent/90">{humanCollectionImageOutputLabel("gallery")}</span>.
-          Pasted https links are kept as you provide them. Up to {MAX_GALLERY} images can appear in on-chain metadata{" "}
+          Pasted https links are kept as provided. Up to {MAX_GALLERY} images can appear in on-chain{" "}
           <code className="rounded bg-black/30 px-1 font-mono text-[10px]">properties.files</code>.
         </p>
       </div>
@@ -92,7 +93,7 @@ export function LaunchGallerySection({ galleryUrls, setGalleryUrls }: Props) {
             uploading || galleryUrls.length >= MAX_GALLERY ? "pointer-events-none opacity-50" : ""
           }`}
         >
-          {uploading ? "Uploading…" : "Upload images"}
+          {uploading ? "Uploading…" : "Upload NFT art"}
         </label>
         <input
           id={fileId}

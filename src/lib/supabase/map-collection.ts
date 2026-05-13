@@ -166,19 +166,33 @@ function asGenesisPassNftConfig(v: unknown): GenesisPassNftConfig | undefined {
     typeof o.traitConfigUri === "string" && /^https:\/\//i.test(o.traitConfigUri.trim())
       ? o.traitConfigUri.trim()
       : undefined;
-  const allowDynamicPostReveal = typeof o.allowDynamicPostReveal === "boolean" ? o.allowDynamicPostReveal : undefined;
+  const rarityListingUrl =
+    typeof o.rarityListingUrl === "string" && /^https:\/\//i.test(o.rarityListingUrl.trim())
+      ? o.rarityListingUrl.trim()
+      : undefined;
+  const allowDynamicPostReveal = o.allowDynamicPostReveal === true ? true : undefined;
   let traitConfig: TraitCollectionConfig | undefined;
   if (o.traitConfig != null && typeof o.traitConfig === "object" && !Array.isArray(o.traitConfig)) {
     const tc = o.traitConfig as TraitCollectionConfig;
     if (tc.schemaVersion === 1 && Array.isArray(tc.layers)) traitConfig = tc;
   }
-  if (!revealAt && !placeholderImageUrl && !traitConfigUri && !traitConfig) return undefined;
+  if (
+    !revealAt &&
+    !placeholderImageUrl &&
+    !traitConfigUri &&
+    !traitConfig &&
+    !rarityListingUrl &&
+    allowDynamicPostReveal !== true
+  ) {
+    return undefined;
+  }
   const out: GenesisPassNftConfig = {};
   if (revealAt) out.revealAt = revealAt;
   if (placeholderImageUrl) out.placeholderImageUrl = placeholderImageUrl;
   if (traitConfigUri) out.traitConfigUri = traitConfigUri;
   if (traitConfig) out.traitConfig = traitConfig;
-  if (allowDynamicPostReveal != null) out.allowDynamicPostReveal = allowDynamicPostReveal;
+  if (rarityListingUrl) out.rarityListingUrl = rarityListingUrl;
+  if (allowDynamicPostReveal === true) out.allowDynamicPostReveal = true;
   return out;
 }
 
