@@ -69,7 +69,7 @@ export const NFT_COLLECTION_PROGRAM_LAYERS: readonly CreationProtocolLayer[] = [
   {
     id: "L3",
     title: "Setup here",
-    subtitle: "Art, traits, reveal timing, and rarity links.",
+    subtitle: "Art, traits, reveal timing, and on-site leaderboard.",
     responsibilities: ["What you configure before and after launch."],
     boundaries: ["Still need your wallet to deploy and update on-chain."],
   },

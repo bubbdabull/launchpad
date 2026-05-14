@@ -26,7 +26,7 @@ type TraitMode = "off" | "builtin" | "custom";
 
 /**
  * Optional generative / reveal fields on create. Creators can pick a built-in trait preset
- * (no JSON / rarity file) or supply their own JSON; reveal, placeholder, and rarity links stay optional.
+ * (no JSON file) or supply their own JSON; reveal and placeholder stay optional.
  */
 export function GenesisGenerativeFields() {
   const base = useId();
@@ -85,8 +85,8 @@ export function GenesisGenerativeFields() {
         <p className="mt-2 text-[11px] leading-relaxed text-muted">
           Skip this if you are not doing generative Genesis Pass art. You can use one of our{" "}
           <span className="text-white/85">built-in trait presets</span> (weighted random combos, images hosted here — no
-          JSON file or rarity spreadsheet). Or paste your own trait JSON if you already built a collection. Reveal
-          time, placeholder image, and external rarity links stay optional.
+          JSON file). Or paste your own trait JSON if you already built a collection. Reveal time and placeholder image
+          stay optional. After launch, use Manage to refresh the on-site rarity leaderboard.
         </p>
       </div>
 
@@ -346,18 +346,6 @@ export function GenesisGenerativeFields() {
           <Gl htmlFor="genesis-reveal">Reveal at (local time, optional)</Gl>
           <input id="genesis-reveal" type="datetime-local" name="genesisRevealAtLocal" className={inputClass} />
         </div>
-      </div>
-      <div className="space-y-1.5">
-        <Gl htmlFor="genesis-rarity">Rarity page (optional)</Gl>
-        <input
-          id="genesis-rarity"
-          type="text"
-          name="genesisRarityListingUrl"
-          placeholder="https://rarenft… or your rankings sheet"
-          autoComplete="off"
-          className={inputClass}
-        />
-        <p className="text-[10px] text-muted">Link only — not required for built-in presets.</p>
       </div>
       <label className="flex items-center gap-2 text-xs text-muted">
         <input type="checkbox" name="genesisAllowDynamicPostReveal" value="1" className="rounded border-line" />

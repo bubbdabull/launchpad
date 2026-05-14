@@ -46,8 +46,8 @@ export type Collection = {
   /** Metaplex Core collection mint (the "collection NFT"). */
   coreCollection?: string;
   /**
-   * Optional generative Genesis Pass pipeline (trait-config variants, reveal timing, placeholder art,
-   * external rarity listing URL). **Cosmetic / metadata only** — never used for claim math or holder entitlements.
+   * Optional generative Genesis Pass pipeline (trait-config variants, reveal timing, placeholder art).
+   * **Cosmetic / metadata only** — never used for claim math or holder entitlements.
    */
   genesisPassNft?: GenesisPassNftConfig;
   /**

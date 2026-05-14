@@ -7,6 +7,7 @@ import {
   updateGenesisPassNftConfig,
   type GenesisPassManageState,
 } from "@/app/project/[slug]/manage/genesis-pass-actions";
+import { ReindexGenesisLeaderboardForm } from "@/components/genesis/ReindexGenesisLeaderboardForm";
 import { GENESIS_BUILTIN_PRESET_OPTIONS } from "@/lib/nft-generation/presets/built-in-genesis-presets";
 import type { Collection } from "@/types/collection";
 
@@ -80,8 +81,8 @@ export function GenesisPassNftConfigForm({ collection: c }: { collection: Collec
           <p className="mt-2 max-w-2xl text-xs leading-relaxed text-muted">
             Off-chain display only — does not change MintReceipt, claims, or holder math. Trait rules are stored on this
             launch when you paste or load JSON below (no external link required). Optional reveal time hides
-            generative traits until then. Add a rarity listing URL for RareNFT, MoonRank, HowRare, or your own rankings
-            page — mint and launch pages show it as a link only.
+            generative traits until then. Use “Refresh rarity leaderboard” below so the mint page shows ranks from this
+            app.
           </p>
         </div>
       </div>
@@ -95,6 +96,11 @@ export function GenesisPassNftConfigForm({ collection: c }: { collection: Collec
           {state.message}
         </p>
       ) : null}
+
+      <ReindexGenesisLeaderboardForm
+        slug={c.slug}
+        enabled={!!((g?.traitConfig || g?.traitConfigUri) && c.coreCollection?.trim())}
+      />
 
       <form action={action} className="mt-6 space-y-4">
         <input type="hidden" name="slug" value={c.slug} />
@@ -167,19 +173,6 @@ export function GenesisPassNftConfigForm({ collection: c }: { collection: Collec
             </label>
           </div>
         </div>
-
-        <label className="block space-y-1.5">
-          <span className="text-[11px] font-medium uppercase tracking-wider text-muted">
-            Rarity listing URL (https) — RareNFT, MoonRank, HowRare, …
-          </span>
-          <input
-            type="text"
-            name="rarityListingUrl"
-            defaultValue={g?.rarityListingUrl ?? ""}
-            placeholder="https://…"
-            className={inputClass}
-          />
-        </label>
 
         <label className="flex items-center gap-2 text-xs text-muted">
           <input

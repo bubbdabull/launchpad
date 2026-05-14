@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { GenesisCollectionPreviewStrip } from "@/components/genesis/GenesisCollectionPreviewStrip";
 import { GenesisGenerativeBanner } from "@/components/genesis/GenesisGenerativeBanner";
+import { GenesisLeaderboardSection } from "@/components/genesis/GenesisLeaderboardSection";
 import { MintEnergyShell } from "@/components/mint/MintEnergyShell";
 import { GenesisPassMintPanel } from "@/components/mint/GenesisPassMintPanel";
 import { getCollectionBySlug } from "@/lib/data/launchpad";
@@ -71,8 +72,12 @@ export default async function MintPage({ params }: PageProps) {
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:py-14">
         <MintEnergyShell slug={c.slug}>
           {c.genesisPassNft ? (
-            <div className="mb-8">
+            <div className="mb-8 space-y-6">
               <GenesisGenerativeBanner slug={c.slug} config={c.genesisPassNft} />
+              <GenesisLeaderboardSection
+                slug={c.slug}
+                hasGenerativeTraits={!!(c.genesisPassNft.traitConfig || c.genesisPassNft.traitConfigUri)}
+              />
             </div>
           ) : null}
           <div className="grid gap-10 sm:grid-cols-[1.1fr_0.9fr]">

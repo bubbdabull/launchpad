@@ -460,7 +460,7 @@ export function CreateLaunchForm() {
       <Section
         step="02"
         title="NFT collection, art & variations"
-        subtitle="Optional Genesis Pass art, trait-config URL, reveal timing, and rarity links."
+        subtitle="Optional Genesis Pass art, trait-config URL, and reveal timing."
       >
         <p className="text-[11px] leading-relaxed text-muted">
           <span className="font-medium text-amber-200/90">Optional</span> NFT art and trait links here. Token banner and

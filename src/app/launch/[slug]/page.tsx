@@ -9,6 +9,7 @@ import { MintTiersPanel } from "@/components/launch/MintTiersPanel";
 import { PassYieldPanel } from "@/components/launch/PassYieldPanel";
 import { RewardHoldersPanel } from "@/components/launch/RewardHoldersPanel";
 import { GenesisGenerativeBanner } from "@/components/genesis/GenesisGenerativeBanner";
+import { GenesisLeaderboardSection } from "@/components/genesis/GenesisLeaderboardSection";
 import { getWalletSession } from "@/lib/auth/session";
 import { getCreatorProfile } from "@/lib/creators/profiles";
 import { getCollectionBySlug } from "@/lib/data/launchpad";
@@ -114,7 +115,14 @@ export default async function LaunchPage({ params }: PageProps) {
       <LaunchMissionShell collection={c} creatorProfile={creatorProfile}>
         <div className="space-y-8 lg:py-2">
         {c.genesisPassNft ? (
-          <GenesisGenerativeBanner slug={c.slug} config={c.genesisPassNft} />
+          <div className="space-y-6">
+            <GenesisGenerativeBanner slug={c.slug} config={c.genesisPassNft} />
+            <GenesisLeaderboardSection
+              slug={c.slug}
+              hasGenerativeTraits={!!(c.genesisPassNft.traitConfig || c.genesisPassNft.traitConfigUri)}
+              isCreator={isCreator}
+            />
+          </div>
         ) : null}
         {showDeployPanel ? <DeployOnChainPanel collection={c} /> : null}
         <MintTiersPanel collection={c} />

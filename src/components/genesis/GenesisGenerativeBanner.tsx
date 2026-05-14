@@ -8,24 +8,11 @@ import { genesisRevealPhase, parseRevealAtMs } from "@/lib/nft-generation/reveal
 
 type Props = { slug: string; config: GenesisPassNftConfig };
 
-function rarityLinkLabel(url: string): string {
-  try {
-    const host = new URL(url).hostname.replace(/^www\./, "");
-    if (/rarenft/i.test(host)) return "View on RareNFT";
-    if (/moonrank/i.test(host)) return "View on MoonRank";
-    if (/howrare/i.test(host)) return "View on HowRare";
-  } catch {
-    /* ignore */
-  }
-  return "Rarity & rankings";
-}
-
 export function GenesisGenerativeBanner({ slug, config }: Props) {
   const [now, setNow] = useState(() => Date.now());
   const phase = genesisRevealPhase(now, config);
   const revealMs = parseRevealAtMs(config);
   const hasTraitPipeline = !!(config.traitConfigUri || config.traitConfig);
-  const rarityUrl = config.rarityListingUrl?.trim();
   const hasPlaceholder = !!(config.placeholderImageUrl?.trim());
 
   useEffect(() => {
@@ -62,24 +49,9 @@ export function GenesisGenerativeBanner({ slug, config }: Props) {
       </div>
     ) : null;
 
-  if (!hasTraitPipeline && !rarityUrl && !revealMs && !hasPlaceholder) {
+  if (!hasTraitPipeline && !revealMs && !hasPlaceholder) {
     return null;
   }
-
-  const linkRow =
-    rarityUrl && /^https:\/\//i.test(rarityUrl) ? (
-      <div className="relative mt-3 flex flex-wrap items-center gap-3 border-t border-white/10 pt-3">
-        <a
-          href={rarityUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center rounded-full border border-accent/40 bg-accent/10 px-4 py-2 text-xs font-semibold text-accent hover:bg-accent/15"
-        >
-          {rarityLinkLabel(rarityUrl)} ↗
-        </a>
-        <span className="text-[10px] text-muted">Opens your rankings page — not used for mint math.</span>
-      </div>
-    ) : null;
 
   if (!hasTraitPipeline) {
     return (
@@ -93,23 +65,21 @@ export function GenesisGenerativeBanner({ slug, config }: Props) {
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">Genesis Pass extras</p>
             <p className="mt-1 text-sm font-medium text-white">
-              {rarityUrl
-                ? "Rarity listings are linked below."
-                : revealMs
-                  ? phase === "unrevealed"
-                    ? "Reveal scheduled — add a trait-config URI in manage when your art pipeline is ready."
-                    : "Reveal time has passed — configure trait-config.json for generative variants."
-                  : hasPlaceholder
-                    ? "Placeholder art is set; add trait-config when variants are ready."
-                    : "Add trait variants (hosted trait-config) and optional rarity links in project settings."}
+              {revealMs
+                ? phase === "unrevealed"
+                  ? "Reveal scheduled — add a trait-config URI in manage when your art pipeline is ready."
+                  : "Reveal time has passed — configure trait-config.json for generative variants."
+                : hasPlaceholder
+                  ? "Placeholder art is set; add trait-config when variants are ready."
+                  : "Add trait variants (hosted trait-config or pasted JSON) in project settings."}
             </p>
             <p className="mt-1 text-xs text-muted">
-              Cosmetic only — holder rewards and supply follow the on-chain program.
+              After mints, creators can build the on-site rarity leaderboard from Manage. Cosmetic only — holder
+              rewards and supply follow the on-chain program.
             </p>
           </div>
           {countdown}
         </div>
-        {linkRow}
         <p className="relative mt-3 text-[10px] text-muted/80">Launch · {slug}</p>
       </motion.div>
     );
@@ -129,13 +99,12 @@ export function GenesisGenerativeBanner({ slug, config }: Props) {
             {phase === "unrevealed" ? "Reveal pending · traits hidden in metadata" : "Revealed · full traits live in metadata"}
           </p>
           <p className="mt-1 text-xs text-muted">
-            Variants come from your <span className="text-white/85">trait-config.json</span> weights and rules. Rarity
-            links are display-only — claims and allocation stay on-chain.
+            Variants come from your <span className="text-white/85">trait-config.json</span> weights and rules. Rankings
+            below refresh from Manage — claims and allocation stay on-chain.
           </p>
         </div>
         {countdown}
       </div>
-      {linkRow}
       <p className="relative mt-3 text-[10px] text-muted/80">Launch · {slug}</p>
     </motion.div>
   );

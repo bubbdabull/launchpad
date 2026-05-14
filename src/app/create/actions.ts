@@ -100,7 +100,6 @@ function parseGenesisPassConfigForCreate(
   const traitPreset = asText(form, "genesisTraitPreset");
   const traitConfigUri = asText(form, "genesisTraitConfigUri");
   const placeholderImageUrl = asText(form, "genesisPlaceholderImageUrl");
-  const rarityListingUrl = asText(form, "genesisRarityListingUrl");
   const revealLocal = asText(form, "genesisRevealAtLocal");
   const allowDynamic = asText(form, "genesisAllowDynamicPostReveal") === "1";
 
@@ -112,16 +111,8 @@ function parseGenesisPassConfigForCreate(
       };
     }
   }
-  if (rarityListingUrl && !isHttpsUrl(rarityListingUrl)) {
-    return {
-      ok: false,
-      message: "Rarity listing URL must be https (RareNFT, MoonRank, HowRare, or your own rankings page).",
-    };
-  }
-
   const next: GenesisPassNftConfig = {};
   if (placeholderImageUrl) next.placeholderImageUrl = placeholderImageUrl;
-  if (rarityListingUrl) next.rarityListingUrl = rarityListingUrl;
   if (allowDynamic) next.allowDynamicPostReveal = true;
 
   if (revealLocal) {
@@ -160,7 +151,6 @@ function parseGenesisPassConfigForCreate(
     !next.traitConfig &&
     !next.traitConfigUri &&
     !next.placeholderImageUrl &&
-    !next.rarityListingUrl &&
     !next.revealAt &&
     !next.allowDynamicPostReveal
   ) {

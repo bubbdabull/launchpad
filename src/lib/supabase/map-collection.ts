@@ -174,10 +174,6 @@ function asGenesisPassNftConfig(v: unknown): GenesisPassNftConfig | undefined {
     typeof o.traitConfigUri === "string" && /^https:\/\//i.test(o.traitConfigUri.trim())
       ? o.traitConfigUri.trim()
       : undefined;
-  const rarityListingUrl =
-    typeof o.rarityListingUrl === "string" && /^https:\/\//i.test(o.rarityListingUrl.trim())
-      ? o.rarityListingUrl.trim()
-      : undefined;
   const allowDynamicPostReveal = o.allowDynamicPostReveal === true ? true : undefined;
   let traitConfig: TraitCollectionConfig | undefined;
   if (o.traitConfig != null && typeof o.traitConfig === "object" && !Array.isArray(o.traitConfig)) {
@@ -189,7 +185,6 @@ function asGenesisPassNftConfig(v: unknown): GenesisPassNftConfig | undefined {
     !placeholderImageUrl &&
     !traitConfigUri &&
     !traitConfig &&
-    !rarityListingUrl &&
     allowDynamicPostReveal !== true
   ) {
     return undefined;
@@ -199,7 +194,6 @@ function asGenesisPassNftConfig(v: unknown): GenesisPassNftConfig | undefined {
   if (placeholderImageUrl) out.placeholderImageUrl = placeholderImageUrl;
   if (traitConfigUri) out.traitConfigUri = traitConfigUri;
   if (traitConfig) out.traitConfig = traitConfig;
-  if (rarityListingUrl) out.rarityListingUrl = rarityListingUrl;
   if (allowDynamicPostReveal === true) out.allowDynamicPostReveal = true;
   return out;
 }
