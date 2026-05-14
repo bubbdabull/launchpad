@@ -9,6 +9,7 @@ import {
   type LaunchManageState,
 } from "@/app/project/[slug]/manage/actions";
 import { LaunchMediaSection } from "@/components/launchpad/LaunchMediaSection";
+import { MAX_SLICE_B_RESERVE_PCT } from "@/lib/launch/slice-b-reserve";
 import { serializeTokenMetadataProfile } from "@/lib/launch/token-metadata-profile";
 import type { Collection } from "@/types/collection";
 
@@ -275,7 +276,7 @@ export function LaunchSettingsForm({
                     <input
                       type="range"
                       min={0}
-                      max={10}
+                      max={MAX_SLICE_B_RESERVE_PCT}
                       step={1}
                       value={sliceBPct}
                       onChange={(e) => setSliceBPct(Number(e.target.value))}

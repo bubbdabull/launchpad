@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getWalletSession } from "@/lib/auth/session";
 import { explainLaunchEconomicsError, validateLaunchEconomicsInputs } from "@/lib/launch/launch-economics-policy";
 import { deserializeMintTiers } from "@/lib/launch/mint-tiers";
+import { MAX_SLICE_B_RESERVE_PCT } from "@/lib/launch/slice-b-reserve";
 import { parseNftGalleryUrlsJson } from "@/lib/launch/nft-gallery";
 import {
   serializeTokenMetadataProfile,
@@ -289,7 +290,7 @@ export async function createDraftCollection(
   const vestingCliff = clampInt(Number(asText(form, "creatorVestingCliffMonths")), 0, 24, 0);
   const vestingPeriod = clampInt(Number(asText(form, "creatorVestingPeriodMonths")), 1, 60, 12);
   const tokenHolderRewardPct = clampInt(Number(asText(form, "tokenHolderRewardPct")), 0, 100, 0);
-  const sliceBPct = clampInt(Number(asText(form, "sliceBPct")), 0, 10, 0);
+  const sliceBPct = clampInt(Number(asText(form, "sliceBPct")), 0, MAX_SLICE_B_RESERVE_PCT, 0);
   const sliceBCreatorSharePct = clampInt(Number(asText(form, "sliceBCreatorSharePct")), 0, 100, 50);
 
   const tiersRaw = asText(form, "mintTiers");

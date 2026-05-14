@@ -17,6 +17,7 @@ import {
 } from "@/lib/launch/trading-tax-protocol";
 import { HERO_LAYOUTS, isValidAccentColor } from "@/lib/launch/project-page";
 import { isCollectionAssetPublicUrl } from "@/lib/images/is-collection-asset-public-url";
+import { MAX_SLICE_B_RESERVE_PCT } from "@/lib/launch/slice-b-reserve";
 
 import { GenesisGenerativeFields } from "./GenesisGenerativeFields";
 import { LaunchMediaSection } from "./LaunchMediaSection";
@@ -329,7 +330,7 @@ export function CreateLaunchForm() {
       <Section
         step="01"
         title="Launch identity, listing copy & token metadata"
-        subtitle="Names, SPL symbol, listing copy, utilities, then token metadata (banner + icon). Optional Genesis art and traits in step 02."
+        subtitle="Names, SPL symbol, listing copy, utilities, token images, and how the fixed 1B supply is split. Optional Genesis art and traits in step 02."
       >
         <div className="grid gap-5 sm:grid-cols-2">
           <div className="space-y-2">
@@ -454,6 +455,70 @@ export function CreateLaunchForm() {
           onSocialTelegram={setSocialTelegram}
           onSocialTiktok={setSocialTiktok}
         />
+
+        <div className="mt-2 rounded-2xl border border-white/[0.08] bg-black/20 p-5 sm:p-6">
+          <input type="hidden" name="sliceBPct" value={String(sliceBPct)} />
+          <input type="hidden" name="sliceBCreatorSharePct" value={String(sliceBCreatorSharePct)} />
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent">Supply split</p>
+          <h3 className="mt-1 font-display text-base font-semibold text-white">1 billion tokens</h3>
+          <p className="mt-2 max-w-2xl text-[12px] leading-relaxed text-muted">
+            Choose how much sits in the <span className="text-white/85">liquidity pool</span> versus a{" "}
+            <span className="text-white/85">creator / community reserve</span> shared between you and Genesis holders.
+          </p>
+
+          <div className="mt-5 grid gap-5 sm:grid-cols-2">
+            <div className="space-y-2">
+              <FieldLabel>Creator / community reserve (% of 1B)</FieldLabel>
+              <div className="flex items-center gap-3">
+                <input
+                  type="range"
+                  min={0}
+                  max={MAX_SLICE_B_RESERVE_PCT}
+                  step={1}
+                  value={sliceBPct}
+                  onChange={(e) => setSliceBPct(Number(e.target.value))}
+                  className="flex-1 accent-accent"
+                  aria-label="Percent of total supply in creator and community reserve"
+                />
+                <span className="w-12 text-right text-sm font-medium text-white">{sliceBPct}%</span>
+              </div>
+              <p className="text-[11px] text-muted">Up to {MAX_SLICE_B_RESERVE_PCT}% can go to this reserve.</p>
+            </div>
+            <div className="space-y-2">
+              <FieldLabel>Your share of that reserve</FieldLabel>
+              <div className="flex items-center gap-3">
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={sliceBCreatorSharePct}
+                  onChange={(e) => setSliceBCreatorSharePct(Number(e.target.value))}
+                  disabled={sliceBPct === 0}
+                  className="flex-1 accent-accent disabled:opacity-40"
+                  aria-label="Your percent of the creator and community reserve"
+                />
+                <span className="w-12 text-right text-sm font-medium text-white">{sliceBCreatorSharePct}%</span>
+              </div>
+              <p className="text-[11px] text-muted">
+                {sliceBPct === 0
+                  ? "Move the reserve slider above, then split it between you and Genesis holders."
+                  : "The rest of that reserve goes to Genesis holders."}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+            <Stat label="Liquidity pool" value={`${sliceAPct}%`} sub={`≈ ${sliceAWholeTokens.toLocaleString()} tokens`} />
+            <Stat
+              label="Creator / community reserve"
+              value={`${sliceBPct}%`}
+              sub={sliceBPct === 0 ? "None" : `${sliceBWholeTokens.toLocaleString()} tokens reserved`}
+            />
+            <Stat label="Total supply" value="1B" sub="Fixed at one billion" />
+          </div>
+        </div>
+
         <input type="hidden" name="tokenMetadataProfile" value="{}" />
       </Section>
 
@@ -656,69 +721,6 @@ export function CreateLaunchForm() {
 
       <Section
         step="05"
-        title="1B token split (Slice B)"
-        subtitle="slice_b_reserve_bps ≤ 1000 (10%) and slice_b_creator_of_reserve_bps ≤ 10000 on initialize_launch."
-      >
-        <input type="hidden" name="sliceBPct" value={String(sliceBPct)} />
-        <input type="hidden" name="sliceBCreatorSharePct" value={String(sliceBCreatorSharePct)} />
-
-        <div className="grid gap-5 sm:grid-cols-2">
-          <div className="space-y-2">
-            <FieldLabel>Slice B reserve (% of 1B)</FieldLabel>
-            <div className="flex items-center gap-3">
-              <input
-                type="range"
-                min={0}
-                max={10}
-                step={1}
-                value={sliceBPct}
-                onChange={(e) => setSliceBPct(Number(e.target.value))}
-                className="flex-1 accent-accent"
-                aria-label="Slice B percent of total supply"
-              />
-              <span className="w-12 text-right text-sm font-medium text-white">{sliceBPct}%</span>
-            </div>
-            <p className="text-[11px] text-muted">
-              On deploy: <code className="text-[10px]">slice_b_reserve_bps = {sliceBPct * 100}</code> (0–1000).
-            </p>
-          </div>
-          <div className="space-y-2">
-            <FieldLabel>Your share of Slice B</FieldLabel>
-            <div className="flex items-center gap-3">
-              <input
-                type="range"
-                min={0}
-                max={100}
-                step={1}
-                value={sliceBCreatorSharePct}
-                onChange={(e) => setSliceBCreatorSharePct(Number(e.target.value))}
-                disabled={sliceBPct === 0}
-                className="flex-1 accent-accent disabled:opacity-40"
-                aria-label="Creator percent of slice B"
-              />
-              <span className="w-12 text-right text-sm font-medium text-white">{sliceBCreatorSharePct}%</span>
-            </div>
-            <p className="text-[11px] text-muted">
-              {sliceBPct === 0
-                ? "—"
-                : `Deploy maps creator share to bps of the Slice B reserve (0–10000).`}
-            </p>
-          </div>
-        </div>
-
-        <div className="grid gap-3 sm:grid-cols-3">
-          <Stat label="Slice A" value={`${sliceAPct}%`} sub={`≈ ${sliceAWholeTokens.toLocaleString()} tokens`} />
-          <Stat
-            label="Slice B"
-            value={`${sliceBPct}%`}
-            sub={sliceBPct === 0 ? "None" : `${sliceBWholeTokens.toLocaleString()} tokens reserved`}
-          />
-          <Stat label="Total SPL" value="1B" sub="Fixed in product economics" />
-        </div>
-      </Section>
-
-      <Section
-        step="06"
         title="Creator vesting & holder rewards (tokens)"
         subtitle="Off-chain schedule intent for docs and deploy UI; claims are enforced on-chain when configured."
       >
@@ -807,7 +809,7 @@ export function CreateLaunchForm() {
       </Section>
 
       <Section
-        step="07"
+        step="06"
         title="DAMM trading tax · creator vs Genesis Pass"
         subtitle="Matches launch-controller `split_trading_tax_settlement`. Saved as holder_reward_pct and nft_holder_share_bps (= pct × 100) for deploy."
       >
@@ -888,7 +890,7 @@ export function CreateLaunchForm() {
       </Section>
 
       <Section
-        step="08"
+        step="07"
         title="Reward timing (slots)"
         subtitle="U64 values stored for CreatorRewardConfig-style deploys. Empty max claim = no cap."
       >

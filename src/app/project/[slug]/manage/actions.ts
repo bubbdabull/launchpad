@@ -27,6 +27,7 @@ import { revalidatePath } from "next/cache";
 import { getWalletSession } from "@/lib/auth/session";
 import { isCollectionCreator } from "@/lib/data/store-admin";
 import { parseNftGalleryUrlsJson } from "@/lib/launch/nft-gallery";
+import { clampSliceBPct } from "@/lib/launch/slice-b-reserve";
 import {
   serializeTokenMetadataProfile,
   tokenMetadataProfileFromForm,
@@ -58,11 +59,6 @@ function asText(form: FormData, key: string): string {
 
 function clampString(value: string, max: number): string {
   return value.slice(0, max);
-}
-
-function clampSliceBPct(n: number, fallback: number): number {
-  if (!Number.isFinite(n)) return fallback;
-  return Math.max(0, Math.min(10, Math.round(n)));
 }
 
 function clampSliceCreatorSharePct(n: number, fallback: number): number {

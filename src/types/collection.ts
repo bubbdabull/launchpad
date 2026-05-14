@@ -99,7 +99,7 @@ export type Collection = {
   tokenHolderRewardPct?: number;
 
   /**
-   * Slice B: percent of the fixed 1B project SPL held out for creator + Genesis holders (0–10).
+   * Slice B: percent of the fixed 1B project SPL held out for creator + Genesis holders (0–30).
    * Remainder is Slice A (vault / LP / program path). Immutable after Alpha Vault is linked.
    */
   sliceBPct?: number;

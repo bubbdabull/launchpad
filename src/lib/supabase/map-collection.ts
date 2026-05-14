@@ -1,4 +1,5 @@
 import { deserializeMintTiers } from "@/lib/launch/mint-tiers";
+import { MAX_SLICE_B_RESERVE_PCT } from "@/lib/launch/slice-b-reserve";
 import { sanitizeProjectPageDoc } from "@/lib/launch/project-page";
 import {
   parseTokenMetadataProfileJson,
@@ -61,7 +62,7 @@ export type CollectionRow = {
   creator_vesting_cliff_months: number | null;
   creator_vesting_period_months: number | null;
   token_holder_reward_pct: number | null;
-  /** 0–10: percent of 1B project tokens in Slice B reserve. */
+  /** 0–30: percent of 1B project tokens in Slice B reserve. */
   slice_b_pct?: number | null;
   /** 0–100: within Slice B, creator vs holder share of that reserve. */
   slice_b_creator_share_pct?: number | null;
@@ -242,7 +243,10 @@ export function rowToCollection(row: CollectionRow): Collection {
     creatorVestingCliffMonths: row.creator_vesting_cliff_months ?? undefined,
     creatorVestingPeriodMonths: row.creator_vesting_period_months ?? undefined,
     tokenHolderRewardPct: row.token_holder_reward_pct ?? undefined,
-    sliceBPct: row.slice_b_pct != null ? Math.max(0, Math.min(10, Math.round(Number(row.slice_b_pct)))) : undefined,
+    sliceBPct:
+      row.slice_b_pct != null
+        ? Math.max(0, Math.min(MAX_SLICE_B_RESERVE_PCT, Math.round(Number(row.slice_b_pct))))
+        : undefined,
     sliceBCreatorSharePct:
       row.slice_b_creator_share_pct != null
         ? Math.max(0, Math.min(100, Math.round(Number(row.slice_b_creator_share_pct))))

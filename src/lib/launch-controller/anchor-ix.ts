@@ -11,6 +11,7 @@ import {
   getAssociatedTokenAddressSync,
 } from "@solana/spl-token";
 
+import { MAX_SLICE_B_RESERVE_BPS } from "@/lib/launch/slice-b-reserve";
 import {
   launchStatePda,
   depositReceiptPda,
@@ -94,8 +95,8 @@ export async function buildInitializeLaunchIx(args: {
   assertU64(args.tokensPerQuoteNum, "tokensPerQuoteNum");
   assertU64(args.tokensPerQuoteDen, "tokensPerQuoteDen");
   assertU64(args.genesisSupply, "genesisSupply");
-  if (args.sliceBReserveBps < 0 || args.sliceBReserveBps > 1000) {
-    throw new Error("sliceBReserveBps must be 0–1000 (0–10.00% of 1B).");
+  if (args.sliceBReserveBps < 0 || args.sliceBReserveBps > MAX_SLICE_B_RESERVE_BPS) {
+    throw new Error(`sliceBReserveBps must be 0–${MAX_SLICE_B_RESERVE_BPS} (0–${MAX_SLICE_B_RESERVE_BPS / 100}% of 1B).`);
   }
   if (args.sliceBCreatorOfReserveBps < 0 || args.sliceBCreatorOfReserveBps > 10_000) {
     throw new Error("sliceBCreatorOfReserveBps must be 0–10000.");

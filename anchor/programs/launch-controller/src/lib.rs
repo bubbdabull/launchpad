@@ -28,6 +28,9 @@ pub const LC_TRADING_ACTIVE: u8 = 3;
 pub const LC_CLAIM_ACTIVE: u8 = 4;
 pub const LC_FINALIZED: u8 = 5;
 
+/// Max Slice B reserve as basis points of the 1B supply (30% = 3000 bps). Keep in sync with `MAX_SLICE_B_RESERVE_BPS` in `src/lib/launch/slice-b-reserve.ts`.
+pub const MAX_SLICE_B_RESERVE_BPS: u16 = 3000;
+
 fn valid_advance(cur: u8, next: u8) -> bool {
     matches!(
         (cur, next),
@@ -57,7 +60,7 @@ pub mod launch_controller {
         require!(vesting_seconds > 0, LaunchError::ZeroVesting);
         require!(tokens_per_quote_den > 0, LaunchError::ZeroDenominator);
         require!(expected_quote_per_mint > 0, LaunchError::BadDepositAmount);
-        require!(slice_b_reserve_bps <= 1000, LaunchError::BadSliceBps);
+        require!(slice_b_reserve_bps <= MAX_SLICE_B_RESERVE_BPS, LaunchError::BadSliceBps);
         require!(slice_b_creator_of_reserve_bps <= 10_000, LaunchError::BadSliceBps);
         let st = &mut ctx.accounts.launch_state;
         st.authority = ctx.accounts.authority.key();

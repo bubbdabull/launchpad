@@ -12,6 +12,7 @@ import { buildMintPoolVaultSequence } from "@/lib/launch/build-mint-pool-vault-s
 import { buildDeployCollectionTx } from "@/lib/launch/build-deploy-collection-tx";
 import { launchMintSetupComplete } from "@/lib/launch/launch-on-chain";
 import { lamportsToSolString, primarySalesVaultTargetLamports } from "@/lib/launch/vault-economics";
+import { MAX_SLICE_B_RESERVE_BPS, MAX_SLICE_B_RESERVE_PCT } from "@/lib/launch/slice-b-reserve";
 import { explorerUrl } from "@/lib/solana/cluster-public";
 import { solanaPubkeysEqual } from "@/lib/solana/pubkey-eq";
 import { sendLegacyTransactionPreferRpc } from "@/lib/solana/send-legacy-tx-prefer-rpc";
@@ -188,7 +189,7 @@ export function DeployOnChainPanel({ collection: c }: Props) {
   const vaultSelloutTarget = useMemo(() => primarySalesVaultTargetLamports(c), [c.supply, c.mintPriceLamports]);
 
   const sliceSummary = useMemo(() => {
-    const b = Math.max(0, Math.min(10, c.sliceBPct ?? 0));
+    const b = Math.max(0, Math.min(MAX_SLICE_B_RESERVE_PCT, c.sliceBPct ?? 0));
     const a = 100 - b;
     const creatorOfB = Math.max(0, Math.min(100, c.sliceBCreatorSharePct ?? 50));
     return { sliceAPct: a, sliceBPct: b, creatorOfB };
@@ -337,7 +338,7 @@ export function DeployOnChainPanel({ collection: c }: Props) {
     });
 
     if (lifecycle == null) {
-      const sliceBReserveBps = Math.max(0, Math.min(1000, Math.round((c.sliceBPct ?? 0) * 100)));
+      const sliceBReserveBps = Math.max(0, Math.min(MAX_SLICE_B_RESERVE_BPS, Math.round((c.sliceBPct ?? 0) * 100)));
       const sliceBCreatorOfReserveBps = Math.max(
         0,
         Math.min(10_000, Math.round((c.sliceBCreatorSharePct ?? 50) * 100)),
