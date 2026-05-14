@@ -28,7 +28,22 @@ pub const LC_TRADING_ACTIVE: u8 = 3;
 pub const LC_CLAIM_ACTIVE: u8 = 4;
 pub const LC_FINALIZED: u8 = 5;
 
-/// Max Slice B reserve as basis points of the 1B supply (30% = 3000 bps). Keep in sync with `MAX_SLICE_B_RESERVE_BPS` in `src/lib/launch/slice-b-reserve.ts`.
+/// **1B routing at launch (product target — wiring in progress):** when the project SPL is created, the fixed
+/// supply splits by `slice_b_reserve_bps` (basis points of 1B, cap `MAX_SLICE_B_RESERVE_BPS`):
+///
+/// - **Slice A** — the complement of Slice B: `(10_000 - slice_b_reserve_bps) / 10_000` of 1B — is intended to fund
+///   **primary liquidity with the Meteora Alpha Vault / DAMM path** (`LaunchState.alpha_vault`, pool seeding).
+/// - **Slice B** — `slice_b_reserve_bps / 10_000` of 1B — is intended for **two PDA vaults** on the same
+///   `project_mint`: a **creator vault** and an **NFT holder vault**, sized by `slice_b_creator_of_reserve_bps /
+///   10_000` of the Slice B bucket to the creator vault and the remainder to NFT holders (time-gated claims), **not**
+///   the authority’s personal ATA.
+///
+/// **Setup invariant:** no long-lived **project-token** balance should **custody** in the creator’s personal SPL ATA
+/// during setup; the wallet may **sign** and pay rent / wrapped SOL. Today `initialize_launch` persists bps + inits
+/// empty `vault_token` (authority = `launch_state`), while TS still mints the full supply to the payer — reconcile
+/// with mint-to-PDA + Alpha Vault seeding + Slice B vault funding in L1 + Meteora changes.
+
+/// Max basis points of 1B in Slice B reserve (30% = 3000). Must match `MAX_SLICE_B_RESERVE_BPS` in `src/lib/launch/slice-b-reserve.ts`.
 pub const MAX_SLICE_B_RESERVE_BPS: u16 = 3000;
 
 fn valid_advance(cur: u8, next: u8) -> bool {
@@ -1879,7 +1894,10 @@ pub struct LaunchState {
     pub deposit_seq: u64,
     pub genesis_supply: u64,
     pub trading_live_at: i64,
+    /// Total share of the 1B `project_mint` supply in the Slice B bucket (basis points of 10_000).
+    /// Complement (Slice A) is intended for the Meteora Alpha Vault / DAMM path — see module routing doc.
     pub slice_b_reserve_bps: u16,
+    /// Of the Slice B bucket only: basis points to the **creator** vault (holder gets the rest).
     pub slice_b_creator_of_reserve_bps: u16,
     pub bump: u8,
 }

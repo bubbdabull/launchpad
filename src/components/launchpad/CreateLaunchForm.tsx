@@ -329,8 +329,8 @@ export function CreateLaunchForm() {
 
       <Section
         step="01"
-        title="Launch identity, listing copy & token metadata"
-        subtitle="Names, SPL symbol, listing copy, utilities, token images, and how the fixed 1B supply is split. Optional Genesis art and traits in step 02."
+        title="Launch, token & economics"
+        subtitle="Identity, listing, token metadata, 1B supply split, vesting, trading tax, and reward timing — all in this step. Optional Genesis art in step 02."
       >
         <div className="grid gap-5 sm:grid-cols-2">
           <div className="space-y-2">
@@ -456,66 +456,313 @@ export function CreateLaunchForm() {
           onSocialTiktok={setSocialTiktok}
         />
 
-        <div className="mt-2 rounded-2xl border border-white/[0.08] bg-black/20 p-5 sm:p-6">
-          <input type="hidden" name="sliceBPct" value={String(sliceBPct)} />
-          <input type="hidden" name="sliceBCreatorSharePct" value={String(sliceBCreatorSharePct)} />
-          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent">Supply split</p>
-          <h3 className="mt-1 font-display text-base font-semibold text-white">1 billion tokens</h3>
-          <p className="mt-2 max-w-2xl text-[12px] leading-relaxed text-muted">
-            Choose how much sits in the <span className="text-white/85">liquidity pool</span> versus a{" "}
-            <span className="text-white/85">creator / community reserve</span> shared between you and Genesis holders.
-          </p>
-
-          <div className="mt-5 grid gap-5 sm:grid-cols-2">
-            <div className="space-y-2">
-              <FieldLabel>Creator / community reserve (% of 1B)</FieldLabel>
-              <div className="flex items-center gap-3">
-                <input
-                  type="range"
-                  min={0}
-                  max={MAX_SLICE_B_RESERVE_PCT}
-                  step={1}
-                  value={sliceBPct}
-                  onChange={(e) => setSliceBPct(Number(e.target.value))}
-                  className="flex-1 accent-accent"
-                  aria-label="Percent of total supply in creator and community reserve"
-                />
-                <span className="w-12 text-right text-sm font-medium text-white">{sliceBPct}%</span>
+        <div className="mt-8 border-t border-white/[0.08] pt-6">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent">Supply split (1B)</p>
+          <div className="mt-4 rounded-2xl border border-white/[0.08] bg-black/20 p-5 sm:p-6">
+            <input type="hidden" name="sliceBPct" value={String(sliceBPct)} />
+            <input type="hidden" name="sliceBCreatorSharePct" value={String(sliceBCreatorSharePct)} />
+            <p className="text-[11px] leading-relaxed text-muted">
+              Slice A is the liquid float (mint + trading). Slice B is reserved for incentives and protocol programs. You
+              choose how much of Slice B is creator-controlled vs protocol-controlled (max{" "}
+              {MAX_SLICE_B_RESERVE_PCT}% protocol reserve).
+            </p>
+            <div className="mt-5 space-y-4">
+              <div className="space-y-2">
+                <FieldLabel>Slice B (% of 1B)</FieldLabel>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={sliceBPct}
+                    onChange={(e) => setSliceBPct(Number(e.target.value))}
+                    className="flex-1 accent-accent"
+                  />
+                  <span className="w-12 text-right text-sm font-medium text-white">{sliceBPct}%</span>
+                </div>
               </div>
-              <p className="text-[11px] text-muted">Up to {MAX_SLICE_B_RESERVE_PCT}% can go to this reserve.</p>
+              <div className="space-y-2">
+                <FieldLabel>Of Slice B, creator share (%)</FieldLabel>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="range"
+                    min={0}
+                    max={100 - MAX_SLICE_B_RESERVE_PCT}
+                    step={1}
+                    value={sliceBCreatorSharePct}
+                    onChange={(e) => setSliceBCreatorSharePct(Number(e.target.value))}
+                    className="flex-1 accent-accent"
+                  />
+                  <span className="w-12 text-right text-sm font-medium text-white">{sliceBCreatorSharePct}%</span>
+                </div>
+              </div>
             </div>
-            <div className="space-y-2">
-              <FieldLabel>Your share of that reserve</FieldLabel>
-              <div className="flex items-center gap-3">
+            <div className="mt-5 grid gap-3 sm:grid-cols-3">
+              <Stat label="Slice A (float)" value={`${sliceAPct}%`} sub={`≈ ${sliceAWholeTokens.toLocaleString()} tokens`} />
+              <Stat label="Slice B (reserve)" value={`${sliceBPct}%`} sub={`≈ ${sliceBWholeTokens.toLocaleString()} tokens`} />
+              <Stat label="Total" value="100%" sub="1,000,000,000 tokens" />
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8 border-t border-white/[0.08] pt-6">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent">Vesting & mint rewards</p>
+          <p className="mt-2 text-[11px] leading-relaxed text-muted">
+            Off-chain schedule intent for docs and deploy UI; claims are enforced on-chain when configured.
+          </p>
+          <div className="mt-4 space-y-5">
+            <input type="hidden" name="creatorVestingSupplyPct" value={String(vestingPct)} />
+            <input type="hidden" name="creatorVestingCliffMonths" value={String(vestingCliff)} />
+            <input type="hidden" name="creatorVestingPeriodMonths" value={String(vestingPeriod)} />
+            <input type="hidden" name="tokenHolderRewardPct" value={String(tokenHolderRewardPct)} />
+
+            <div className="grid gap-5 sm:grid-cols-3">
+              <div className="space-y-2">
+                <FieldLabel>Reserve vesting (% of 1B)</FieldLabel>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="range"
+                    min={0}
+                    max={50}
+                    step={1}
+                    value={vestingPct}
+                    onChange={(e) => setVestingPct(Number(e.target.value))}
+                    className="flex-1 accent-accent"
+                  />
+                  <span className="w-12 text-right text-sm font-medium text-white">{vestingPct}%</span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <FieldLabel>Cliff (months)</FieldLabel>
+                <select
+                  value={vestingCliff}
+                  onChange={(e) => setVestingCliff(Number(e.target.value))}
+                  disabled={vestingPct === 0}
+                  className={`${inputClass} disabled:opacity-50`}
+                >
+                  {[0, 1, 3, 6, 12].map((m) => (
+                    <option key={m} value={m}>
+                      {m === 0 ? "No cliff" : `${m} mo`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <FieldLabel>Vesting period (months)</FieldLabel>
+                <select
+                  value={vestingPeriod}
+                  onChange={(e) => setVestingPeriod(Number(e.target.value))}
+                  disabled={vestingPct === 0}
+                  className={`${inputClass} disabled:opacity-50`}
+                >
+                  {[3, 6, 12, 18, 24, 36, 48].map((m) => (
+                    <option key={m} value={m}>
+                      {m} mo
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {vestingPct > 0 ? (
+              <div className="rounded-2xl border border-accent/30 bg-gradient-to-b from-accent/[0.07] to-transparent p-5">
+                <p className="text-[10px] uppercase tracking-wider text-accent">Per unlocked wave</p>
+                <div className="mt-3 flex items-center gap-3">
+                  <span className="w-16 text-right text-[10px] uppercase text-muted">You</span>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={5}
+                    value={tokenHolderRewardPct}
+                    onChange={(e) => setTokenHolderRewardPct(Number(e.target.value))}
+                    className="flex-1 accent-accent"
+                  />
+                  <span className="w-16 text-[10px] uppercase text-muted">Holders</span>
+                </div>
+                <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                  <div className="rounded-xl border border-line/70 bg-panel/40 p-3">
+                    <p className="text-[10px] uppercase text-muted">To you</p>
+                    <p className="mt-1 font-display text-lg font-semibold text-white">{tokensToCreator.toLocaleString()}</p>
+                  </div>
+                  <div className="rounded-xl border border-line/70 bg-panel/40 p-3">
+                    <p className="text-[10px] uppercase text-muted">To holders</p>
+                    <p className="mt-1 font-display text-lg font-semibold text-white">{tokensToHolders.toLocaleString()}</p>
+                  </div>
+                </div>
+                <p className="mt-2 text-[11px] text-muted">≈ {tokensPerMonth.toLocaleString()} tokens / month during vesting.</p>
+              </div>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="mt-8 border-t border-white/[0.08] pt-6">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent">Trading tax (DAMM)</p>
+          <p className="mt-2 text-[11px] leading-relaxed text-muted">
+            Matches launch-controller <code className="rounded bg-black/30 px-1 py-0.5 font-mono text-[10px]">
+              split_trading_tax_settlement
+            </code>
+            . Saved as holder_reward_pct and nft_holder_share_bps (= pct × 100) for deploy.
+          </p>
+          <div className="mt-4 space-y-5">
+            <input type="hidden" name="holderRewardPct" value={String(holderRewardPct)} />
+            <div className="grid gap-3 sm:grid-cols-3">
+              <Stat label="Tax on swap volume" value={tradingTaxPctLabel()} sub="TRADING_TAX_BPS = 300" />
+              <Stat
+                label="Platform (of tax)"
+                value={bpsToPctLabel(platformShareOfTradeApproxBps())}
+                sub="20% of tax · TRADING_TAX_PLATFORM_LEG_BPS"
+              />
+              <Stat
+                label="Creator leg (of tax)"
+                value={bpsToPctLabel(creatorLegOfTradeApproxBps())}
+                sub="Remainder (~80% of tax) — you split below"
+              />
+            </div>
+            <div className="rounded-2xl border border-accent/30 bg-gradient-to-b from-accent/[0.07] to-transparent p-5">
+              <p className="text-[10px] uppercase tracking-wider text-accent">
+                Split creator leg ({bpsToPctLabel(creatorLegOfTradeApproxBps())} of volume ≈)
+              </p>
+              <p className="mt-2 text-[11px] leading-relaxed text-muted">
+                Slider sets what share of the <strong className="text-white/85">creator leg</strong> routes to the NFT
+                holder reward index on-chain ({creatorSelfPct}% to your vault · {holderRewardPct}% to holders).
+              </p>
+              <div className="mt-3 flex items-center gap-3">
+                <span className="w-16 text-right text-[10px] uppercase text-muted">You</span>
                 <input
                   type="range"
                   min={0}
                   max={100}
-                  step={1}
-                  value={sliceBCreatorSharePct}
-                  onChange={(e) => setSliceBCreatorSharePct(Number(e.target.value))}
-                  disabled={sliceBPct === 0}
-                  className="flex-1 accent-accent disabled:opacity-40"
-                  aria-label="Your percent of the creator and community reserve"
+                  step={5}
+                  value={holderRewardPct}
+                  onChange={(e) => setHolderRewardPct(Number(e.target.value))}
+                  className="flex-1 accent-accent"
                 />
-                <span className="w-12 text-right text-sm font-medium text-white">{sliceBCreatorSharePct}%</span>
+                <span className="w-16 text-[10px] uppercase text-muted">Holders</span>
               </div>
-              <p className="text-[11px] text-muted">
-                {sliceBPct === 0
-                  ? "Move the reserve slider above, then split it between you and Genesis holders."
-                  : "The rest of that reserve goes to Genesis holders."}
-              </p>
+              <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                <div className="rounded-xl border border-line/70 bg-panel/40 p-3">
+                  <p className="text-[10px] uppercase text-muted">You (approx. of trade)</p>
+                  <p className="mt-1 font-display text-lg font-semibold text-white">
+                    {bpsToPctLabel(tradingSplitDisplay.creatorVaultApproxBps)}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-line/70 bg-panel/40 p-3">
+                  <p className="text-[10px] uppercase text-muted">Holders (approx. of trade)</p>
+                  <p className="mt-1 font-display text-lg font-semibold text-white">
+                    {bpsToPctLabel(tradingSplitDisplay.holderApproxBps)}
+                  </p>
+                </div>
+              </div>
             </div>
+            <div className="space-y-2">
+              <FieldLabel>Phase label</FieldLabel>
+              <input
+                name="phase"
+                placeholder="Public mint"
+                className={inputClass}
+                value={phase}
+                onChange={(e) => setPhase(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <FieldLabel>Creator fee wallet</FieldLabel>
+              <input
+                name="creatorTreasury"
+                placeholder="Your Solana address (optional; defaults empty)"
+                className={`${inputClass} font-mono`}
+                value={creatorTreasury}
+                onChange={(e) => setCreatorTreasury(e.target.value)}
+              />
+            </div>
+            <p className="text-xs text-muted">
+              Status stays <span className="text-white/90">upcoming</span> until Alpha Vault + Core collection are linked on
+              the trade page; mint UI follows on-chain lifecycle.
+            </p>
           </div>
+        </div>
 
-          <div className="mt-5 grid gap-3 sm:grid-cols-3">
-            <Stat label="Liquidity pool" value={`${sliceAPct}%`} sub={`≈ ${sliceAWholeTokens.toLocaleString()} tokens`} />
-            <Stat
-              label="Creator / community reserve"
-              value={`${sliceBPct}%`}
-              sub={sliceBPct === 0 ? "None" : `${sliceBWholeTokens.toLocaleString()} tokens reserved`}
-            />
-            <Stat label="Total supply" value="1B" sub="Fixed at one billion" />
+        <div className="mt-8 border-t border-white/[0.08] pt-6">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent">Reward timing (slots)</p>
+          <p className="mt-2 text-[11px] leading-relaxed text-muted">
+            U64 values stored for CreatorRewardConfig-style deploys. Empty max claim = no cap.
+          </p>
+          <div className="mt-4 space-y-5">
+            <input type="hidden" name="creatorRewardVestingSlots" value={creatorRewardVestingSlots} />
+            <input type="hidden" name="creatorRewardClaimStartDelaySlots" value={creatorRewardDelaySlots} />
+            <input type="hidden" name="creatorRewardTransferCooldownSlots" value={creatorRewardCooldownSlots} />
+            <input type="hidden" name="creatorRewardMaxClaimPerEpoch" value={creatorRewardMaxClaimPerEpoch} />
+            <input type="hidden" name="creatorRewardIncentiveShareBps" value={String(creatorRewardIncentiveSharePct * 100)} />
+            <input type="hidden" name="creatorRewardImmutableAfterLaunch" value={creatorRewardImmutable ? "1" : "0"} />
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <FieldLabel htmlFor="cr-vest">Vesting duration (slots)</FieldLabel>
+                <input
+                  id="cr-vest"
+                  className={`${inputClass} font-mono`}
+                  value={creatorRewardVestingSlots}
+                  onChange={(e) => setCreatorRewardVestingSlots(e.target.value.replace(/\D/g, ""))}
+                />
+                <p className="text-[11px] text-muted">Default ~216000 (~1 day wall time at typical slot rates).</p>
+              </div>
+              <div className="space-y-2">
+                <FieldLabel htmlFor="cr-delay">Claim start delay (slots)</FieldLabel>
+                <input
+                  id="cr-delay"
+                  className={`${inputClass} font-mono`}
+                  value={creatorRewardDelaySlots}
+                  onChange={(e) => setCreatorRewardDelaySlots(e.target.value.replace(/\D/g, ""))}
+                />
+              </div>
+              <div className="space-y-2">
+                <FieldLabel htmlFor="cr-cool">Transfer cooldown (slots)</FieldLabel>
+                <input
+                  id="cr-cool"
+                  className={`${inputClass} font-mono`}
+                  value={creatorRewardCooldownSlots}
+                  onChange={(e) => setCreatorRewardCooldownSlots(e.target.value.replace(/\D/g, ""))}
+                />
+              </div>
+              <div className="space-y-2">
+                <FieldLabel htmlFor="cr-max">Max claim / epoch (raw units)</FieldLabel>
+                <input
+                  id="cr-max"
+                  placeholder="Empty = u64 max"
+                  className={`${inputClass} font-mono`}
+                  value={creatorRewardMaxClaimPerEpoch}
+                  onChange={(e) => setCreatorRewardMaxClaimPerEpoch(e.target.value.replace(/\D/g, ""))}
+                />
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-line bg-panel/40 p-5">
+              <p className="text-[10px] uppercase tracking-wider text-muted">Creator → holder incentive bps</p>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={5}
+                value={creatorRewardIncentiveSharePct}
+                onChange={(e) => setCreatorRewardIncentiveSharePct(Number(e.target.value))}
+                className="mt-3 w-full accent-accent"
+              />
+              <p className="mt-2 font-mono text-xs text-white/80">{creatorRewardIncentiveSharePct * 100} / 10000 bps</p>
+            </div>
+
+            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line/70 bg-panel/40 p-4">
+              <input
+                type="checkbox"
+                className="mt-1 h-4 w-4 shrink-0 rounded border-line accent-accent"
+                checked={creatorRewardImmutable}
+                onChange={(e) => setCreatorRewardImmutable(e.target.checked)}
+              />
+              <span>
+                <span className="block text-sm font-medium text-white/90">Immutable reward config after trading</span>
+                <span className="mt-1 block text-[11px] text-muted">Matches on-chain guard when you enable it at deploy.</span>
+              </span>
+            </label>
           </div>
         </div>
 
@@ -717,257 +964,6 @@ export function CreateLaunchForm() {
             wiring happens on the trade page after publish.
           </p>
         </div>
-      </Section>
-
-      <Section
-        step="05"
-        title="Creator vesting & holder rewards (tokens)"
-        subtitle="Off-chain schedule intent for docs and deploy UI; claims are enforced on-chain when configured."
-      >
-        <input type="hidden" name="creatorVestingSupplyPct" value={String(vestingPct)} />
-        <input type="hidden" name="creatorVestingCliffMonths" value={String(vestingCliff)} />
-        <input type="hidden" name="creatorVestingPeriodMonths" value={String(vestingPeriod)} />
-        <input type="hidden" name="tokenHolderRewardPct" value={String(tokenHolderRewardPct)} />
-
-        <div className="grid gap-5 sm:grid-cols-3">
-          <div className="space-y-2">
-            <FieldLabel>Reserve vesting (% of 1B)</FieldLabel>
-            <div className="flex items-center gap-3">
-              <input
-                type="range"
-                min={0}
-                max={50}
-                step={1}
-                value={vestingPct}
-                onChange={(e) => setVestingPct(Number(e.target.value))}
-                className="flex-1 accent-accent"
-              />
-              <span className="w-12 text-right text-sm font-medium text-white">{vestingPct}%</span>
-            </div>
-          </div>
-          <div className="space-y-2">
-            <FieldLabel>Cliff (months)</FieldLabel>
-            <select
-              value={vestingCliff}
-              onChange={(e) => setVestingCliff(Number(e.target.value))}
-              disabled={vestingPct === 0}
-              className={`${inputClass} disabled:opacity-50`}
-            >
-              {[0, 1, 3, 6, 12].map((m) => (
-                <option key={m} value={m}>
-                  {m === 0 ? "No cliff" : `${m} mo`}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-2">
-            <FieldLabel>Vesting period (months)</FieldLabel>
-            <select
-              value={vestingPeriod}
-              onChange={(e) => setVestingPeriod(Number(e.target.value))}
-              disabled={vestingPct === 0}
-              className={`${inputClass} disabled:opacity-50`}
-            >
-              {[3, 6, 12, 18, 24, 36, 48].map((m) => (
-                <option key={m} value={m}>
-                  {m} mo
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {vestingPct > 0 ? (
-          <div className="rounded-2xl border border-accent/30 bg-gradient-to-b from-accent/[0.07] to-transparent p-5">
-            <p className="text-[10px] uppercase tracking-wider text-accent">Per unlocked wave</p>
-            <div className="mt-3 flex items-center gap-3">
-              <span className="w-16 text-right text-[10px] uppercase text-muted">You</span>
-              <input
-                type="range"
-                min={0}
-                max={100}
-                step={5}
-                value={tokenHolderRewardPct}
-                onChange={(e) => setTokenHolderRewardPct(Number(e.target.value))}
-                className="flex-1 accent-accent"
-              />
-              <span className="w-16 text-[10px] uppercase text-muted">Holders</span>
-            </div>
-            <div className="mt-4 grid gap-2 sm:grid-cols-2">
-              <div className="rounded-xl border border-line/70 bg-panel/40 p-3">
-                <p className="text-[10px] uppercase text-muted">To you</p>
-                <p className="mt-1 font-display text-lg font-semibold text-white">{tokensToCreator.toLocaleString()}</p>
-              </div>
-              <div className="rounded-xl border border-line/70 bg-panel/40 p-3">
-                <p className="text-[10px] uppercase text-muted">To holders</p>
-                <p className="mt-1 font-display text-lg font-semibold text-white">{tokensToHolders.toLocaleString()}</p>
-              </div>
-            </div>
-            <p className="mt-2 text-[11px] text-muted">≈ {tokensPerMonth.toLocaleString()} tokens / month during vesting.</p>
-          </div>
-        ) : null}
-      </Section>
-
-      <Section
-        step="06"
-        title="DAMM trading tax · creator vs Genesis Pass"
-        subtitle="Matches launch-controller `split_trading_tax_settlement`. Saved as holder_reward_pct and nft_holder_share_bps (= pct × 100) for deploy."
-      >
-        <input type="hidden" name="holderRewardPct" value={String(holderRewardPct)} />
-        <div className="grid gap-3 sm:grid-cols-3">
-          <Stat label="Tax on swap volume" value={tradingTaxPctLabel()} sub="TRADING_TAX_BPS = 300" />
-          <Stat
-            label="Platform (of tax)"
-            value={bpsToPctLabel(platformShareOfTradeApproxBps())}
-            sub="20% of tax · TRADING_TAX_PLATFORM_LEG_BPS"
-          />
-          <Stat
-            label="Creator leg (of tax)"
-            value={bpsToPctLabel(creatorLegOfTradeApproxBps())}
-            sub="Remainder (~80% of tax) — you split below"
-          />
-        </div>
-        <div className="rounded-2xl border border-accent/30 bg-gradient-to-b from-accent/[0.07] to-transparent p-5">
-          <p className="text-[10px] uppercase tracking-wider text-accent">
-            Split creator leg ({bpsToPctLabel(creatorLegOfTradeApproxBps())} of volume ≈)
-          </p>
-          <p className="mt-2 text-[11px] leading-relaxed text-muted">
-            Slider sets what share of the <strong className="text-white/85">creator leg</strong> routes to the NFT
-            holder reward index on-chain ({creatorSelfPct}% to your vault · {holderRewardPct}% to holders).
-          </p>
-          <div className="mt-3 flex items-center gap-3">
-            <span className="w-16 text-right text-[10px] uppercase text-muted">You</span>
-            <input
-              type="range"
-              min={0}
-              max={100}
-              step={5}
-              value={holderRewardPct}
-              onChange={(e) => setHolderRewardPct(Number(e.target.value))}
-              className="flex-1 accent-accent"
-            />
-            <span className="w-16 text-[10px] uppercase text-muted">Holders</span>
-          </div>
-          <div className="mt-4 grid gap-2 sm:grid-cols-2">
-            <div className="rounded-xl border border-line/70 bg-panel/40 p-3">
-              <p className="text-[10px] uppercase text-muted">You (approx. of trade)</p>
-              <p className="mt-1 font-display text-lg font-semibold text-white">
-                {bpsToPctLabel(tradingSplitDisplay.creatorVaultApproxBps)}
-              </p>
-            </div>
-            <div className="rounded-xl border border-line/70 bg-panel/40 p-3">
-              <p className="text-[10px] uppercase text-muted">Holders (approx. of trade)</p>
-              <p className="mt-1 font-display text-lg font-semibold text-white">
-                {bpsToPctLabel(tradingSplitDisplay.holderApproxBps)}
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="space-y-2">
-          <FieldLabel>Phase label</FieldLabel>
-          <input
-            name="phase"
-            placeholder="Public mint"
-            className={inputClass}
-            value={phase}
-            onChange={(e) => setPhase(e.target.value)}
-          />
-        </div>
-        <div className="space-y-2">
-          <FieldLabel>Creator fee wallet</FieldLabel>
-          <input
-            name="creatorTreasury"
-            placeholder="Your Solana address (optional; defaults empty)"
-            className={`${inputClass} font-mono`}
-            value={creatorTreasury}
-            onChange={(e) => setCreatorTreasury(e.target.value)}
-          />
-        </div>
-        <p className="text-xs text-muted">
-          Status stays <span className="text-white/90">upcoming</span> until Alpha Vault + Core collection are linked on
-          the trade page; mint UI follows on-chain lifecycle.
-        </p>
-      </Section>
-
-      <Section
-        step="07"
-        title="Reward timing (slots)"
-        subtitle="U64 values stored for CreatorRewardConfig-style deploys. Empty max claim = no cap."
-      >
-        <input type="hidden" name="creatorRewardVestingSlots" value={creatorRewardVestingSlots} />
-        <input type="hidden" name="creatorRewardClaimStartDelaySlots" value={creatorRewardDelaySlots} />
-        <input type="hidden" name="creatorRewardTransferCooldownSlots" value={creatorRewardCooldownSlots} />
-        <input type="hidden" name="creatorRewardMaxClaimPerEpoch" value={creatorRewardMaxClaimPerEpoch} />
-        <input type="hidden" name="creatorRewardIncentiveShareBps" value={String(creatorRewardIncentiveSharePct * 100)} />
-        <input type="hidden" name="creatorRewardImmutableAfterLaunch" value={creatorRewardImmutable ? "1" : "0"} />
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <FieldLabel htmlFor="cr-vest">Vesting duration (slots)</FieldLabel>
-            <input
-              id="cr-vest"
-              className={`${inputClass} font-mono`}
-              value={creatorRewardVestingSlots}
-              onChange={(e) => setCreatorRewardVestingSlots(e.target.value.replace(/\D/g, ""))}
-            />
-            <p className="text-[11px] text-muted">Default ~216000 (~1 day wall time at typical slot rates).</p>
-          </div>
-          <div className="space-y-2">
-            <FieldLabel htmlFor="cr-delay">Claim start delay (slots)</FieldLabel>
-            <input
-              id="cr-delay"
-              className={`${inputClass} font-mono`}
-              value={creatorRewardDelaySlots}
-              onChange={(e) => setCreatorRewardDelaySlots(e.target.value.replace(/\D/g, ""))}
-            />
-          </div>
-          <div className="space-y-2">
-            <FieldLabel htmlFor="cr-cool">Transfer cooldown (slots)</FieldLabel>
-            <input
-              id="cr-cool"
-              className={`${inputClass} font-mono`}
-              value={creatorRewardCooldownSlots}
-              onChange={(e) => setCreatorRewardCooldownSlots(e.target.value.replace(/\D/g, ""))}
-            />
-          </div>
-          <div className="space-y-2">
-            <FieldLabel htmlFor="cr-max">Max claim / epoch (raw units)</FieldLabel>
-            <input
-              id="cr-max"
-              placeholder="Empty = u64 max"
-              className={`${inputClass} font-mono`}
-              value={creatorRewardMaxClaimPerEpoch}
-              onChange={(e) => setCreatorRewardMaxClaimPerEpoch(e.target.value.replace(/\D/g, ""))}
-            />
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-line bg-panel/40 p-5">
-          <p className="text-[10px] uppercase tracking-wider text-muted">Creator → holder incentive bps</p>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            step={5}
-            value={creatorRewardIncentiveSharePct}
-            onChange={(e) => setCreatorRewardIncentiveSharePct(Number(e.target.value))}
-            className="mt-3 w-full accent-accent"
-          />
-          <p className="mt-2 font-mono text-xs text-white/80">{creatorRewardIncentiveSharePct * 100} / 10000 bps</p>
-        </div>
-
-        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line/70 bg-panel/40 p-4">
-          <input
-            type="checkbox"
-            className="mt-1 h-4 w-4 shrink-0 rounded border-line accent-accent"
-            checked={creatorRewardImmutable}
-            onChange={(e) => setCreatorRewardImmutable(e.target.checked)}
-          />
-          <span>
-            <span className="block text-sm font-medium text-white/90">Immutable reward config after trading</span>
-            <span className="mt-1 block text-[11px] text-muted">Matches on-chain guard when you enable it at deploy.</span>
-          </span>
-        </label>
       </Section>
 
       <div ref={footerRef} className="rounded-2xl border border-white/[0.06] bg-panel/50 p-5">

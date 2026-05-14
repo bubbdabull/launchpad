@@ -302,8 +302,8 @@ export function LaunchSettingsForm({
                 </Field>
               </div>
               <p className="text-[11px] text-muted">
-                Slice A ≈ {sliceAWhole.toLocaleString()} whole tokens ({sliceAPct}%) · Slice B reserve ≈{" "}
-                {sliceBWhole.toLocaleString()} ({sliceBPct}%) — frozen once the Alpha Vault pubkey is stored.
+                Slice A (Alpha Vault path) ≈ {sliceAWhole.toLocaleString()} whole tokens ({sliceAPct}%) · Slice B
+                reserve ≈ {sliceBWhole.toLocaleString()} ({sliceBPct}%) — frozen once the Alpha Vault pubkey is stored.
               </p>
             </div>
           </section>

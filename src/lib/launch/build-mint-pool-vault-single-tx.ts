@@ -2,6 +2,12 @@
  * Paired-launch path: **new** SPL mint + full 1B supply + Metaplex token metadata
  * + DAMM v2 pool (hasAlphaVault) + FCFS Alpha Vault + **revoke mint authority**.
  *
+ * **Product target:** at launch, **Slice A** (the share not in Slice B) should fund the **Meteora Alpha Vault / DAMM**
+ * path; **Slice B** should land in **two PDA vaults** (creator + NFT holder) on the project mint — not the creator’s
+ * personal ATA. **Current implementation:** step (1) still mints the entire supply to the **payer’s ATA** then seeds
+ * the pool from the wallet; Meteora’s builder expects payer-funded liquidity. Closing this gap requires mint/split
+ * under PDAs then routing Slice A into Alpha Vault seeding and Slice B into the two vaults (L1 + Meteora changes).
+ *
  * Solana legacy transactions are capped at **1232 bytes**. A single bundle exceeds that, so:
  *
  * 1. **Token setup** — create mint, ATA, mint full supply, optional immutable metadata.

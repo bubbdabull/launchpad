@@ -623,7 +623,7 @@ export function DeployOnChainPanel({ collection: c }: Props) {
                   <div className="rounded-lg border border-line/70 bg-black/25 px-3 py-2 text-[11px] text-muted">
                     <p className="font-medium text-white/90">1B split (from launch settings)</p>
                     <p className="mt-1">
-                      Slice A (vault / LP path):{" "}
+                      Slice A (Alpha Vault path):{" "}
                       <span className="font-mono text-accent">{sliceSummary.sliceAPct}%</span> · Slice B reserve:{" "}
                       <span className="font-mono text-accent">{sliceSummary.sliceBPct}%</span> · Within Slice B,
                       creator: <span className="font-mono text-white">{sliceSummary.creatorOfB}%</span>, holders:{" "}

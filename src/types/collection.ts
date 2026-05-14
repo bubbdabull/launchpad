@@ -100,7 +100,7 @@ export type Collection = {
 
   /**
    * Slice B: percent of the fixed 1B project SPL held out for creator + Genesis holders (0–30).
-   * Remainder is Slice A (vault / LP / program path). Immutable after Alpha Vault is linked.
+   * Remainder is Slice A (Meteora Alpha Vault / primary liquidity path). Immutable after Alpha Vault is linked.
    */
   sliceBPct?: number;
   /** Within Slice B only: percent of that reserve for the creator vs holders (0–100). */
